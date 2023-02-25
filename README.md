@@ -39,7 +39,7 @@ Output
 Output Screenshots, From left to right top to bottom.
 
 1. Full screen bitmap displayed
-2. Multi buffer mode screen divided into two buffers
+2. FPS test recorded at 192 FPS for 8Mhz SPI baud rate
 3. Different size and inverted  default font 
 4. ASCII font 1-127 printed out with default font size 1 
 5. Fonts 7-8
@@ -74,10 +74,6 @@ Software
 Hardware SPI. The hardware SPI speed is set at 8MHz you can change this if necessary by changing LCDbegin method arguments.
 Sp10 is used in example files but can be changed by passing a different SPI channel. 
 
-*buffers*
-
-The screen can be divided into different sections with a shared buffer or the entire screen can be allocated to the a single buffer see  example files for details.
-
 *fonts*
 
 There are eight fonts.
@@ -104,7 +100,7 @@ Font data table:
 By default only Font 1 is commented in and ready to go to save memory.
 So to use a non-default Font (2-8), two steps.
 
-1. Comment in the respective define at top of library header file ERM19264_UC1609_graphics_font.h in the USER FONT OPTION ONE section
+1. Comment in the respective define at top of library header file ERM19264_UC1609_font.hpp in the USER FONT OPTION ONE section
 2. Call SetFontNum function and pass it name of respective font.  eg SetFontNum(UC1609Font_Wide)
 
 *font mods*
@@ -119,7 +115,6 @@ Simply comment this define out.
 You can also remove the first 30 characters if not needed but user will need to change 
 ERM19264_ASCII_OFFSET  from 0x00 to 0x20. This will save a further 150 bytes.
 
-
 *bitmaps*
 
 There is a few different ways of displaying bitmaps, 
@@ -131,7 +126,7 @@ There is a few different ways of displaying bitmaps,
 | 3 | drawBitmap() |  Vertical | default,  setDrawBitmapAddr(true) | 
 | 4 | drawBitmap() |   Horizontal | setDrawBitmapAddr(false) |
 
-See the bitmap example file for more details on each method. Bitmaps can be turned to data [here at link]( https://javl.github.io/image2cpp/) , Bitmaps  should be defined in the program memory and buffers in the data memory, for methods 3 & 4 buffers can be initialised with bitmap data.
+See the bitmap example file for more details on each method. Bitmaps can be turned to data [here at link]( https://javl.github.io/image2cpp/).
 
 *User adjustments*
 
@@ -176,5 +171,3 @@ The default is the Hello world one.
 | X_HELLO | Hello world , Basic usage | 
 | X_MISC | Fonts + graphics + FPS test & misc functions, rotate , scroll,  etc | 
 | X_BITMAP | Shows use of bitmaps methods  | 
-
-

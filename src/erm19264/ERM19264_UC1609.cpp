@@ -37,15 +37,15 @@ void ERM19264_UC1609::LCDbegin(uint8_t VbiasPOT, spi_inst_t *spiType, uint32_t s
 	gpio_set_dir(_LCD_CS, GPIO_OUT);
 	gpio_put(_LCD_CS, true);
 
-	spi_inst_t *spi = spiType;
+	_spiInterface = spiType;
 	// Initialize SPI port
-	spi_init(spi, spiSpeedKhz * 1000);
+	spi_init(_spiInterface, spiSpeedKhz * 1000);
 	// Initialize SPI pins
 	gpio_set_function(_LCD_SCLK, GPIO_FUNC_SPI);
 	gpio_set_function(_LCD_DIN, GPIO_FUNC_SPI);
 
 	// Set SPI format
-	spi_set_format(spi,		   // SPI instance
+	spi_set_format(_spiInterface,		   // SPI instance
 				   8,		   // Number of bits per transfer
 				   SPI_CPOL_0, // Polarity (CPOL)
 				   SPI_CPHA_0, // Phase (CPHA)
@@ -256,7 +256,7 @@ void ERM19264_UC1609::LCDBitmap(int16_t x, int16_t y, uint8_t w, uint8_t h, cons
 // Param1: the data byte
 void ERM19264_UC1609::send_data(uint8_t data)
 {
-	spi_write_blocking(spi, &data, 1);
+	spi_write_blocking(_spiInterface, &data, 1);
 }
 
 // Desc: updates the buffer i.e. writes it to the screen

@@ -14,8 +14,8 @@ pico_sdk_init()
 
 # Tell CMake where to find the executable source file
 add_executable(${PROJECT_NAME} 
-  #examples/ERM19264_UC1609_HELLO/main.cpp
-  examples/ERM19264_UC1609_MISC/main.cpp
+  examples/ERM19264_UC1609_HELLO/main.cpp
+  #examples/ERM19264_UC1609_MISC/main.cpp
   #examples/ERM19264_UC1609_BITMAP/main.cpp
  
 )

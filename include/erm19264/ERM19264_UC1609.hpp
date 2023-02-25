@@ -125,7 +125,7 @@ private:
 	int8_t _LCD_DIN;
 	uint8_t _VbiasPOT; // Contrast default 0x49 datasheet 00-FE
 
-	spi_inst_t *spi = spi0;
+	spi_inst_t *_spiInterface;
 };
 
 #endif
