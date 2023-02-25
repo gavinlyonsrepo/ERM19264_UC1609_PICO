@@ -72,7 +72,7 @@ Software
 *SPI*
 
 Hardware SPI. The hardware SPI speed is set at 8MHz you can change this if necessary by changing LCDbegin method arguments.
-Sp10 is used in example files but can be changed by passing a different SPI channel. 
+Spi0 is used in example files but can be changed by passing a different SPI channel.(Spi0 or Spi1) 
 
 *fonts*
 
@@ -97,17 +97,16 @@ Font data table:
 | 8 | UC1609Font_Mednum | 16x16 | ASCII 0x30-0x3A , Numbers + : . - only | 352 |
 
 
-By default only Font 1 is commented in and ready to go to save memory.
-So to use a non-default Font (2-8), two steps.
+By default All fonts are included to save memory by not including fonts that you do not want. 
 
-1. Comment in the respective define at top of library header file ERM19264_UC1609_font.hpp in the USER FONT OPTION ONE section
-2. Call SetFontNum function and pass it name of respective font.  eg SetFontNum(UC1609Font_Wide)
+1. Comment out the respective define at top of library header file ERM19264_UC1609_font.hpp in the USER FONT OPTION ONE section
+
 
 *font mods*
 
 The default ASCII font (font one) is an [extended ASCII font](https://www.extended-ascii.com/) 0-255 characters.
 If you do not need characters 127-255 and wish to save memory space:
-In library header file ERM19264_UC1609_graphics_font.cpp  in the USER FONT OPTION TWO section
+In library header file ERM19264_UC1609_font.hpp  in the USER FONT OPTION TWO section
 Simply comment this define out. 
 
 1. UC_FONT_MOD_TWO (save 640 bytes) extended ASCII 127-255
