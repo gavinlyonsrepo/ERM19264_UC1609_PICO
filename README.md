@@ -3,17 +3,23 @@
 
 ![ ERM19264 ](https://github.com/gavinlyonsrepo/ERM19264_UC1609/blob/main/extras/image/color.jpg)
 
-Table of contents
----------------------------
+# ERN19264_UC1609_PICO
+
+## Table of contents
 
   * [Overview](#overview)
   * [Output](#output)
   * [Hardware](#hardware)
   * [Software](#software)
-  * [Files](#files)
-  
-Overview
---------------------
+	* [SPI](#spi)
+	* [Fonts](#fonts)
+	* [Bitmaps](#bitmaps)
+	* [User adjustments](#user-adjustments)
+	* [File system](#file-system)
+  * [Notes and Issues](#notes-and-issues)
+
+## Overview
+
 * Name : ERM19264_UC1609
 * Title : Library for ERM19264-5 v3 LCD  (UC1609C controller)
 * Description : 
@@ -49,8 +55,7 @@ Output Screenshots, From left to right top to bottom.
 
 ![op2](https://github.com/gavinlyonsrepo/ERM19264_UC1609/blob/main/extras/image/output2.jpg)
 
-Hardware
-----------------------------
+## Hardware
 
 9 pins , Vcc and GND, anode and cathode for the backlight LED and an SPI interface.
 The backlight control is left up to user. The CLK and Data lines are fixed to the SPI interface but any GPIO can be used for reset, DC and CS. 
@@ -66,15 +71,14 @@ This wiring Diagram from the manufacturer showing hardware setup connected to an
 
 ![ ERM19264 ](https://github.com/gavinlyonsrepo/ERM19264_UC1609/blob/main/extras/image/connect.jpg)
 
-Software
--------------------------
+## Software
 
-*SPI*
+### SPI
 
 Hardware SPI. The hardware SPI speed is set at 8MHz you can change this if necessary by changing LCDbegin method arguments.
 Spi0 is used in example files but can be changed by passing a different SPI channel.(Spi0 or Spi1) 
 
-*fonts*
+### Fonts
 
 There are eight fonts.
 A print class is available to print out most passed data types.
@@ -114,7 +118,7 @@ Simply comment this define out.
 You can also remove the first 30 characters if not needed but user will need to change 
 ERM19264_ASCII_OFFSET  from 0x00 to 0x20. This will save a further 150 bytes.
 
-*bitmaps*
+### Bitmaps 
 
 There is a few different ways of displaying bitmaps, 
 
@@ -127,7 +131,7 @@ There is a few different ways of displaying bitmaps,
 
 See the bitmap example file for more details on each method. Bitmaps can be turned to data [here at link]( https://javl.github.io/image2cpp/).
 
-*User adjustments*
+### User adjustments
 
 When the user calls LCDbegin() to start LCD they can specify a contrast setting from 0x00 to 0xFF.
 Datasheet says 0x49 is default. (VbiasPOT). Lower contrast works better on the blue version.
@@ -144,8 +148,7 @@ here. Defaults where found to be fine during all testing of this library.
 | V bias Bot(contrast) | 0x49h default|  Set by user with LCDbegin | PM 7:0 |
 
 
-Files
--------------------
+### File system
 
 X = ERM19264_UC1609 in tables below
 
@@ -170,3 +173,11 @@ The default is the Hello world one.
 | X_HELLO | Hello world , Basic usage | 
 | X_MISC | Fonts + graphics + FPS test & misc functions, rotate , scroll,  etc | 
 | X_BITMAP | Shows use of bitmaps methods  | 
+
+## Notes and Issues
+
+Some users have reported the LCD not initialising correctly with this software.
+It was found that by adjusting the UC1609_ADDRESS_SET setting from 0x02 to 0x01.
+it resolved problem.  This setting is on line 41 of ERM19264_UC1609.h file.
+See [ github issue 4](https://github.com/gavinlyonsrepo/ERM19264_UC1609/issues/4) for details. I suspect the root cause is different versions of product on market.
+In a future version I will allow user to adjust this setting in "LCDbegin" method parameters.
