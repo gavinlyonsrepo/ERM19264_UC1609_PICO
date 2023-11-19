@@ -9,6 +9,9 @@ project(erm19264 C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
+# turn on all compiler warnings 
+add_compile_options(-Wall)
+
 # Creates a pico-sdk subdirectory in our project for the libraries
 pico_sdk_init()
 

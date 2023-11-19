@@ -101,7 +101,7 @@ public:
 	void LCDclearBuffer(void);
 	void LCDBuffer(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t *data);
 
-	void LCDbegin(uint8_t VbiasPot = UC1609_DEFAULT_GN_PM, spi_inst_t *spi = spi0, uint32_t spiBaudRate = 8000);
+	void LCDbegin(uint8_t VbiasPot = UC1609_DEFAULT_GN_PM, spi_inst_t *spi = spi0, uint32_t spiBaudRate = 8000, uint8_t AddressSet = UC1609_ADDRESS_SET);
 	void LCDinit(void);
 	void LCDEnable(uint8_t on);
 	void LCDFillScreen(uint8_t pixel, uint8_t mircodelay);
@@ -124,6 +124,7 @@ private:
 	int8_t _LCD_SCLK;
 	int8_t _LCD_DIN;
 	uint8_t _VbiasPOT; // Contrast default 0x49 datasheet 00-FE
+	uint8_t _AddressCtrl; /**< Set AC [2:0] Program registers  for RAM address control. 0x00 to 0x07*/
 
 	spi_inst_t *_spiInterface;
 };

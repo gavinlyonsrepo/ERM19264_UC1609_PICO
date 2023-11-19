@@ -51,6 +51,7 @@
 
 // === Defines ===
 #define LCDcontrast 0x49 // Constrast 00 to FE , 0x49 is datasheet default. User adjust.
+#define LCDRAMADDRCTRL 0x02  // RAM address control: Range 0-0x07, optional, default 0x02
 #define myLCDHEIGHT 64
 #define myLCDWIDTH 192
 #define DisplayDelay1 5000
@@ -76,7 +77,7 @@ void DisplayFPS();
 int main()
 {
 	// initialize the LCD , contrast , Spi interface , spi Baud rate in Khz
-	myLCD.LCDbegin(LCDcontrast, spi0, 8000);
+	myLCD.LCDbegin(LCDcontrast, spi0, 8000, LCDRAMADDRCTRL);
 
 	myLCD.LCDFillScreen(0x0F, 0); // Splash  screen
 	busy_wait_ms(1500);
@@ -511,7 +512,7 @@ void DisplayFPS()
 		myLCD.print(fps);
 		myLCD.print(" fps");
 		myLCD.setCursor(0, 50);
-		myLCD.print("V 1.5.0");
+		myLCD.print("V 1.7.0");
 		myLCD.drawFastVLine(64, 0, 63, FOREGROUND);
 
 		myLCD.fillRect(70, 10, 20, 20, colour);

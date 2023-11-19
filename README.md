@@ -31,7 +31,7 @@
 5. Sleep mode.
 6. Bitmaps supported.
 7. Hardware SPI options
-8. Port of my arduino [library](https://github.com/gavinlyonsrepo/ERM19264_UC1609) 
+8. Port of my arduino [library](https://github.com/gavinlyonsrepo/ERM19264_UC1609) , More details there including an API. 
 
 * Author: Gavin Lyons
 * Developed on
@@ -133,19 +133,26 @@ See the bitmap example file for more details on each method. Bitmaps can be turn
 
 ### User adjustments
 
+Some users have reported the LCD not initialising correctly with this software.
+It was found that by adjusting the RAM address control setting from 0x02 to 0x01.
+it resolved problem.  See github issue 4 for details. I suspect the root cause is different versions of product on market. As of Version 1.7 users can adjust setting in the "begin" method argument list.
+This setting changes bits 2-0 in AC register, see diagram below for details.
+
+![ ERM19264 ram image ](https://github.com/gavinlyonsrepo/ERM19264_UC1609/blob/main/extras/image/ram.png)
+
 When the user calls LCDbegin() to start LCD they can specify a contrast setting from 0x00 to 0xFF.
-Datasheet says 0x49 is default. (VbiasPOT). Lower contrast works better on the blue version.
+Datasheet says 0x49 is default. (VbiasPOT). Lower contrast works better on the blue color version.
 
-It is also possible for user to change LCD bias ,  Temperature coefficient, frame rate and power control but this must be done by changing defines in header file. Choose lower frame rate for lower power, and choose higher frame rate to improve LCD contrast and minimize flicker. See Data sheet for range of values
-here. Defaults where found to be fine during all testing of this library.
+It is also possible for user to change LCD bias ,  Temperature coefficient, frame rate and power control but this must be done by changing defines in header file. Choose lower frame rate for lower power, and choose higher frame rate to improve LCD contrast and minimize flicker. See Data sheet for range of values here. Defaults where found to be fine during all testing of this library.
 
-| Parameter | default Values |  Define | Register |
+| Parameter | default Values |  Define | Register bits |
 | ------ | ------ |  ------ | ------ |
 | LCD bias |  9 | BIAS_RATIO_SET | BR 1:0 |
 | Temp coefficient | -0.00%/ C |  TEMP_COMP_SET | TC 1:0  |
 | Frame rate | 95 fps |  FRAMERATE_SET |  LC 4:3 |
 | Power control | 1.4mA + Internal VLCD (7x charge pump) |  PC_SET | PC 2:0 |
-| V bias Bot(contrast) | 0x49h default|  Set by user with LCDbegin | PM 7:0 |
+| V bias Bot(contrast) | 0x49 |  Set by user with LCDbegin | PM 7:0 |
+| Ram Address Control | 0x02 |  Set by user with LCDbegin  | AC 2:0 |
 
 
 ### File system
@@ -176,8 +183,4 @@ The default is the Hello world one.
 
 ## Notes and Issues
 
-Some users have reported the LCD not initialising correctly with this software.
-It was found that by adjusting the UC1609_ADDRESS_SET setting from 0x02 to 0x01.
-it resolved problem.  This setting is on line 41 of ERM19264_UC1609.h file.
-See [ github issue 4](https://github.com/gavinlyonsrepo/ERM19264_UC1609/issues/4) for details. I suspect the root cause is different versions of product on market.
-In a future version I will allow user to adjust this setting in "LCDbegin" method parameters.
+

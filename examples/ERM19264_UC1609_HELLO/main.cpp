@@ -12,6 +12,7 @@
 
 // === Defines ===
 #define LCDcontrast 0x49 //Constrast 00 to FE , 0x49 is datasheet default. User adjust.
+#define LCDRAMADDRCTRL 0x02  // RAM address control: Range 0-0x07, optional, default 0x02
 #define myLCDHEIGHT 64
 #define myLCDWIDTH 192
 
@@ -32,7 +33,7 @@ int main()
 
 	// Screen Setup :
 	// initialize the LCD , contrast , Spi interface , spi Baud rate in Khz
-	myLCD.LCDbegin(LCDcontrast, spi0, 8000);
+	myLCD.LCDbegin(LCDcontrast, spi0, 8000, LCDRAMADDRCTRL);
 	myLCD.setTextColor(FOREGROUND);
 	myLCD.setFontNum(UC1609Font_Default);
 	myLCD.LCDFillScreen(0x00, 0);

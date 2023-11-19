@@ -22,9 +22,14 @@ ERM19264_UC1609 ::ERM19264_UC1609(int8_t cd, int8_t rst, int8_t cs, int8_t sclk,
 // Desc: begin Method initialise LCD
 // Sets pinmodes and SPI setup
 // Param1: VBiasPOT default = 0x49 , range 0x00 to 0xFE
-void ERM19264_UC1609::LCDbegin(uint8_t VbiasPOT, spi_inst_t *spiType, uint32_t spiSpeedKhz)
+// Param2: SPI interface 
+// Param3: SPI baud rate in Khz
+// Param4: AddressSet AC [2:0] registers for RAM addr ctrl. default=2 range 0-7
+void ERM19264_UC1609::LCDbegin(uint8_t VbiasPOT, spi_inst_t *spiType, uint32_t spiSpeedKhz, uint8_t AddressSet)
 {
 	_VbiasPOT = VbiasPOT;
+	if (AddressSet > 7 ) AddressSet = 0x02;
+	_AddressCtrl =  AddressSet;
 
 	gpio_init(_LCD_CD);
 	gpio_init(_LCD_RST);
@@ -67,7 +72,7 @@ void ERM19264_UC1609::LCDinit()
 	UC1609_CS_SetLow;
 
 	send_command(UC1609_TEMP_COMP_REG, UC1609_TEMP_COMP_SET);
-	send_command(UC1609_ADDRESS_CONTROL, UC1609_ADDRESS_SET);
+	send_command(UC1609_ADDRESS_CONTROL, _AddressCtrl);
 	send_command(UC1609_FRAMERATE_REG, UC1609_FRAMERATE_SET);
 	send_command(UC1609_BIAS_RATIO, UC1609_BIAS_RATIO_SET);
 	send_command(UC1609_POWER_CONTROL, UC1609_PC_SET);
