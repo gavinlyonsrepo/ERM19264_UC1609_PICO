@@ -3,7 +3,7 @@
 
 ![ ERM19264 ](https://github.com/gavinlyonsrepo/ERM19264_UC1609/blob/main/extras/image/color.jpg)
 
-# ERN19264_UC1609_PICO
+# ERM19264_UC1609_PICO
 
 ## Table of contents
 
@@ -39,8 +39,7 @@
 	2. SDK C++ compiler G++ for arm-none-eabi
 	3. CMAKE , VScode
 
-Output
----------------------------------
+## Output
 
 Output Screenshots, From left to right top to bottom.
 
@@ -133,10 +132,9 @@ See the bitmap example file for more details on each method. Bitmaps can be turn
 
 ### User adjustments
 
-Some users have reported the LCD not initialising correctly with this software.
-It was found that by adjusting the RAM address control setting from 0x02 to 0x01.
-it resolved problem.  See github issue 4 for details. I suspect the root cause is different versions of product on market. As of Version 1.7 users can adjust setting in the "begin" method argument list.
-This setting changes bits 2-0 in AC register, see diagram below for details.
+If the LCD does not initialize correctly.
+Try adjusting the RAM address control setting from 0x02(default) to 0x01.
+See github issue 4(arduino Source port) for details. Users can adjust setting in the "begin" method argument list. This setting changes bits 2-0 in AC register, see diagram below for details.
 
 ![ ERM19264 ram image ](https://github.com/gavinlyonsrepo/ERM19264_UC1609/blob/main/extras/image/ram.png)
 
