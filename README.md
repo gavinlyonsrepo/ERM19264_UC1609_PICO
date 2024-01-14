@@ -134,10 +134,29 @@ If user has picture of a font like so.
 
 There is a monochrome font maker there at [URL](http://rinkydinkelectronics.com/t_make_font_file_mono.php)
 
+
 ### Bitmaps
 
-drawBitmap function will return an error if : The Bitmap is completely off screen , Invalid Bitmap pointer object, bitmap bigger than screen , bitmap bigger/smaller than provided width and height calculation ( This helps prevents buffer overflow). A horizontal addressed Bitmap's width MUST be divisible by 8. eg, for a bitmap with width=88 and height=48. Bitmap excepted size = (88/8) * 48 = 528 bytes. Bitmaps can be turned to data [here at link]( https://javl.github.io/image2cpp/) 
-See example file "_BITMAP" for more details.
+There is a few different ways of displaying bitmaps, 
+
+| Num | Method |  Data addressing | Note |
+| ------ | ------  | ------ |  ------ |  
+| 1 | LCDBitmap() |  Vertical |  Writes directly to screen , no buffer used. | 
+| 2 | LCDBufferScreen() |  Vertical  | For internal use mostly | 
+| 3 | drawBitmap() |  Vertical | default, setDrawBitmapAddr(true) | 
+| 4 | drawBitmap() |  Horizontal | setDrawBitmapAddr(false) |
+
+The drawBitmap method will return an error if : The Bitmap is completely off screen , 
+Invalid Bitmap pointer object, bitmap bigger than screen , bitmap bigger/smaller than provided width and height calculation
+( This helps prevents buffer overflow).
+A vertical addressed Bitmap's height must be divisible by 8. eg, for a  bitmap with width=128 and height=64.
+Bitmap excepted size = 128 * (64/8) = 1024 bytes.
+A horizontal addressed Bitmap's width must be divisible by 8. eg, for a bitmap with width=88 and height=48.
+Bitmap excepted size = (88/8) * 48 = 528 bytes.
+
+Bitmaps can be turned to data [here at link]( https://javl.github.io/image2cpp/) 
+See example file "BITMAP" for more details.
+
 
 
 ### User adjustments

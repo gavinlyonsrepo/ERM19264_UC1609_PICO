@@ -34,7 +34,7 @@
 #define myLCDwidth 192
 #define myLCDheight 64
 #define myScreenSize (myLCDwidth * (myLCDheight / 8))
-uint8_t screenBuffer[myScreenSize]; // Define a buffer to cover whole screen  128 * 64/8
+uint8_t screenBuffer[myScreenSize]; 
 
 // GPIO
 const uint mosi_pin = 19;
