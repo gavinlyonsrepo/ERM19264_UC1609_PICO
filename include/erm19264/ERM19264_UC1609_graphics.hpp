@@ -1,73 +1,74 @@
-/*
- * Project Name: ERM19264_UC1609
- * File: ERM19264_UC1609_graphics.hpp
- * URL: https://github.com/gavinlyonsrepo/ERM19264_UC1609_PICO
- */
+/*!
+   @file ERM19264_UC1609_graphics.hpp
+   @brief ER_LCDM1 LCD driven by UC1609 controller header file
+   for the graphics based functions.ERM19264_UC1609_PICO
+   @author  Gavin Lyons
+*/
 
-#ifndef _ERM19264_GRAPHICS_H
-#define _ERM19264_GRAPHICS_H
+#pragma once
 
-// ** INCLUDES **
+#include <cmath> // for abs function
+#include <cstdio>
 #include "erm19264/ERM19264_UC1609_Print.hpp"
+#include "erm19264/ERM19264_UC1609_font.hpp"
 
-#define swap(a, b)     \
-	{                  \
-		int16_t t = a; \
-		a = b;         \
-		b = t;         \
+#define LCDUC1609swap(a, b) \
+	{                        \
+		int16_t t = a;       \
+		a = b;               \
+		b = t;               \
 	}
 
-typedef enum
-{
-	UC1609Font_Default = 1,
-	UC1609Font_Thick = 2, // NO LOWERCASE
-	UC1609Font_Seven_Seg = 3,
-	UC1609Font_Wide = 4, // NO LOWERCASE
-	UC1609Font_Tiny = 5,
-	UC1609Font_Homespun = 6,
-	UC1609Font_Bignum = 7, // NUMBERS + : . ,one size
-	UC1609Font_Mednum = 8  // NUMBERS + : . ,one size
-} LCD_FONT_TYPE_e;
 
-typedef enum
-{
-	UC1609FontWidth_3 = 3,
-	UC1609FontWidth_5 = 5,
-	UC1609FontWidth_7 = 7,
-	UC1609FontWidth_4 = 4,
-	UC1609FontWidth_8 = 8,
-	UC1609FontWidth_16 = 16
-} UC1609FontWidth_e; // width of the font in bits *(N bytes cols).
 
-typedef enum
+/*! LCD rotate modes in degrees*/
+enum  LCD_rotate_e : uint8_t
 {
-	UC1609FontOffset_Extend = 0x00, //   extends ASCII
-	UC1609FontOffset_Space = 0x20,	// Starts at Space
-	UC1609FontOffset_Number = 0x30, // Starts at number '0'
-} UC1609FontOffset_e;				// font offset in the ASCII table
+	LCD_Degrees_0 = 0, /**< No rotation 0 degrees*/
+	LCD_Degrees_90,    /**< Rotation 90 degrees*/
+	LCD_Degrees_180,   /**< Rotation 180 degrees*/
+	LCD_Degrees_270   /**< Rotation 270 degrees*/
+};
 
-typedef enum
+/*! @brief Font class to hold font data object  */
+class ERM19264_LCDFonts
 {
-	UC1609FontHeight_8 = 8,
-	UC1609FontHeight_16 = 16,
-	UC1609FontHeight_32 = 32
-} UC1609FontHeight_e; // height of the font in bits
+public:
+	ERM19264_LCDFonts();
+	~ERM19264_LCDFonts(){};
 
-class ERM19264_graphics : public Print
+	uint8_t setFont(const uint8_t *font);
+	void setInvertFont(bool invertStatus);
+	bool getInvertFont(void);
+
+	const uint8_t *_FontSelect = pFontDefault; /**< Pointer to the active font,  Fonts Stored are Const */
+
+protected:
+	uint8_t _Font_X_Size = 0x06;  /**< Width Size of a Font character */
+	uint8_t _Font_Y_Size = 0x08;  /**< Height Size of a Font character */
+	uint8_t _FontOffset = 0x00;	  /**< Offset in the ASCII table 0x00 to 0xFF, where font begins */
+	uint8_t _FontNumChars = 0xFE; /**< Number of characters in font 0x00 to 0xFE */
+private:
+	bool _FontInverted = false; /**< Is the font inverted , False = normal , true = inverted*/
+};
+
+/*! @brief Graphics class to hold graphic related functions */
+class ERM19264_graphics : public ERM19264_LCDFonts, public Print
 {
 
 public:
 	ERM19264_graphics(int16_t w, int16_t h); // Constructor
 
-	// This is defined by the subclass:
+	virtual size_t write(uint8_t);
+	uint8_t writeChar(int16_t x, int16_t y, char value);
+	uint8_t writeCharString(int16_t x, int16_t y, char *text);
 	virtual void drawPixel(int16_t x, int16_t y, uint8_t color) = 0;
-
-	virtual void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
-	virtual void drawFastVLine(int16_t x, int16_t y, int16_t h, uint8_t color);
-	virtual void drawFastHLine(int16_t x, int16_t y, int16_t w, uint8_t color);
-	virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color);
-	virtual void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color);
-	virtual void fillScreen(uint8_t color);
+	void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
+	void drawFastVLine(int16_t x, int16_t y, int16_t h, uint8_t color);
+	void drawFastHLine(int16_t x, int16_t y, int16_t w, uint8_t color);
+	void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color);
+	void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color);
+	void fillScreen(uint8_t color);
 
 	void drawCircle(int16_t x0, int16_t y0, int16_t r, uint8_t color);
 	void drawCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername,
@@ -83,48 +84,29 @@ public:
 					   int16_t radius, uint8_t color);
 	void fillRoundRect(int16_t x0, int16_t y0, int16_t w, int16_t h,
 					   int16_t radius, uint8_t color);
-	void drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
-					int16_t w, int16_t h, uint8_t color, uint8_t bg);
+
 	void setDrawBitmapAddr(bool mode);
+	uint8_t drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
+					   int16_t w, int16_t h, uint8_t color, uint8_t bg, uint16_t sizeOfBitmap);
 
 	void setCursor(int16_t x, int16_t y);
-	void setTextColor(uint8_t c);
-	void setTextColor(uint8_t c, uint8_t bg);
-	void setTextSize(uint8_t s);
 	void setTextWrap(bool w);
-	void setFontNum(LCD_FONT_TYPE_e FontNumber);
-	void drawCharNumFont(uint8_t x, uint8_t y, uint8_t c, uint8_t color, uint8_t bg);
-	void drawTextNumFont(uint8_t x, uint8_t y, char *pText, uint8_t color, uint8_t bg);
-	void drawChar(int16_t x, int16_t y, unsigned char c, uint8_t color, uint8_t bg, uint8_t size);
-	void drawText(uint8_t x, uint8_t y, char *pText, uint8_t color, uint8_t bg, uint8_t size);
 
-	virtual size_t write(uint8_t);
+	void setRotation(LCD_rotate_e );
+	LCD_rotate_e getRotation(void);
 
 	int16_t height(void) const;
 	int16_t width(void) const;
 
-	LCD_FONT_TYPE_e FontNum;
-
 protected:
-	const int16_t WIDTH;
-	const int16_t HEIGHT;
+	const int16_t WIDTH;  /**< This is the 'raw' display w - never changes */
+	const int16_t HEIGHT; /**< This is the 'raw' display h - never changes*/
+	int16_t _width;		  /**< Display w as modified by current rotation*/
+	int16_t _height;	  /**< Display h as modified by current rotation*/
+	int16_t _cursor_x;	  /**< Current X co-ord cursor position */
+	int16_t _cursor_y;	  /**< Current Y co-ord cursor position */
 
-	int16_t _width;
-	int16_t _height;
-	int16_t cursor_x;
-	int16_t cursor_y;
-
-	uint8_t textcolor;
-	uint8_t textbgcolor;
-
-	bool wrap;			 // If set, 'wrap' text at right edge of display
-	bool drawBitmapAddr; // True vertical , false = horizontal
-
-	uint8_t textsize;
-	uint8_t _FontNumber = 1;
-	uint8_t _CurrentFontWidth = 5;
-	uint8_t _CurrentFontoffset = 0x00;
-	uint8_t _CurrentFontheight = 8;
+	bool _textwrap;		  /**< If set, 'wrap' text at right edge of display*/
+	bool _drawBitmapAddr; /**< data addressing mode for method drawBitmap, True-vertical , false-horizontal */
+	LCD_rotate_e LCD_rotate = LCD_Degrees_0; /**< Enum to hold rotation */
 };
-
-#endif

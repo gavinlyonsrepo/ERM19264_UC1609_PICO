@@ -1,43 +1,47 @@
-// ******************************
-// Example file name : main.cpp
-// Description:
-// Test file for ERM19264_UC1609 library, showing how to display bitmaps.
-// URL: https://github.com/gavinlyonsrepo/ERM19264_UC1609_PICO
-// *****************************
-// NOTES :
-// -> test (1) Buffer init  test : Bitmap must be Vertical addressed,
-//    can be used when initialising Buffer
-// -> test (2) LCDBitmap method test : Bitmap must be  Vertical addressed,
-//  buffer not used, writes directly to screen, NO Buffer.
-// -> test (3) drawBitmap method test 1/2 :
-//    Bitmap Data Vertical addressed, call setDrawBitmapAddr(true) to set this mode. Default.
-// -> test (4) drawBitmap method test 2/2 :
-//    Bitmap Data Horizontal addressed call setDrawBitmapAddr(false) to set this mode
-//--> test (5) clock demo with small bitmaps
-// ******************************
+/*!
+	@file main.cpp
+	@author Gavin Lyons
+	@brief Test file for ERM19264_UC1609_PICO  library,showing how to use  bitmap
+	@test
+		-# Test 301 Buffer init  test : Bitmap Vertical addressed,
+				can be used when initialising Buffer. Buffer is defined with bitmap data in it.
+		-# Test 302 LCDBitmap method test : Bitmap Vertical addressed,
+				buffer not used, writes directly to screen, NO Buffer.
+		-# Test 303 drawBitmap method test 1/2 :
+				Bitmap Data Vertical addressed, call setDrawBitmapAddr(true) to set this mode. Default.
+		-# Test 304 drawBitmap method test 2/2 :
+				Bitmap Data Horizontal addressed call setDrawBitmapAddr(false) to set this mode
+		-# Test 305 small bitmaps
+*/
 
 // === Libraries ===
 #include "pico/stdlib.h"
 #include "hardware/spi.h"
 #include "erm19264/ERM19264_UC1609.hpp"
 
-// === Defines ===
-#define LCDcontrast 0x49 // Constrast 00 to FE , 0x49 is datasheet default. User adjust.
-#define LCDRAMADDRCTRL 0x02  // RAM address control: Range 0-0x07, optional, default 0x02
-#define myLCDHEIGHT 64
-#define myLCDWIDTH 192
+// Screen settings
+#define LCDcontrast 0x49	// Contrast
+#define LCDRAMADDRCTRL 0x02 // RAM address control: Range 0-0x07, optional, default 0x02
+#define myLCDwidth 192
+#define myLCDheight 64
+#define myScreenSize (myLCDwidth * (myLCDheight / 8))
 
-// === Globals ===
+// GPIO
 const uint mosi_pin = 19;
 const uint sck_pin = 18;
 const uint cs_pin = 17;
 const uint res_pin = 3;
 const uint dc_pin = 2;
 
-ERM19264_UC1609 myLCD(dc_pin, res_pin, cs_pin, sck_pin, mosi_pin);
+// SPI configuration
+uint32_t mySPIBaudRate = 8000;
+spi_inst_t *mySpiInst = spi0;
 
-// 192x64px 192 * 64/8 = 1536+1 fullscreen bitmap. data Vertical addressed
-uint8_t fullScreenBuffer[myLCDWIDTH * (myLCDHEIGHT / 8) + 1] = {
+// instantiate  an LCD object
+ERM19264_UC1609 myLCD(myLCDwidth, myLCDheight);
+
+// 192x64px 192 * 64/8 = 1536 fullscreen bitmap. data Vertical addressed
+uint8_t screenBuffer[myScreenSize] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x80, 0xc0, 0xe0, 0x60, 0x30, 0x30, 0x38, 0x18, 0x18, 0x18, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c,
 	0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c, 0x0c,
@@ -136,48 +140,62 @@ uint8_t fullScreenBuffer[myLCDWIDTH * (myLCDHEIGHT / 8) + 1] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 // === Function prototypes
-void Test1(void); // Init Buffer with full screen buffer
-void Test2(void); // LCDBitmap method "lighting symbols"
-void Test3(void); // drawBitmap method 1/2 Vertical addressed data Test 3
-void Test4(void); // drawBitmap method 2/2 horizontal addressed data Test 4
-void Test5(void); // Clock Demo
+void Test301(void); // Init Buffer with full screen buffer
+void Test302(void); // LCDBitmap method "lighting symbols"
+void Test303(void); // drawBitmap method 1/2 Vertical addressed data Test 3
+void Test304(void); // drawBitmap method 2/2 horizontal addressed data Test 4
+void Test305(void); // Clock Demo
 void ClearScreen(void);
+void SetupTest(void);
+void EndTest(void);
 
 // === Main ===
 int main()
 {
-
-	busy_wait_ms(50);
-
-	// Screen Setup :
-	// initialize the LCD , contrast , Spi interface , spi Baud rate in Khz
-	myLCD.LCDbegin(LCDcontrast, spi0, 8000, LCDRAMADDRCTRL);
-	myLCD.LCDFillScreen(0x00, 0);
-
-	Test1();
-	Test2();
+	SetupTest();
+	Test301();
+	Test302();
 	ClearScreen();
-	Test3();
+	Test303();
 	ClearScreen();
-	Test4();
+	Test304();
 	ClearScreen();
-	Test5();
+	Test305();
 	ClearScreen();
-	myLCD.LCDPowerDown();
-	while (1)
-	{
-		busy_wait_ms(500); // wait here forever , test over
-	}
+	EndTest();
 }
 // === End of main ===
 
 // === Function Space ===
-
-// Test 1 Init buffer with full screen bitmap on startup
-void Test1(void)
+void SetupTest()
 {
-	// Define a buffer to cover whole screen
-	myLCD.LCDbuffer = (uint8_t *)&fullScreenBuffer; // Assign the pointer to the buffer
+	stdio_init_all(); // Initialize chosen serial port, default 38400 baud
+	busy_wait_ms(750);
+	printf("LCD ERM19264:: Start!\r\n");
+	myLCD.LCDSPISetup(mySpiInst, mySPIBaudRate, dc_pin, res_pin, cs_pin, sck_pin, mosi_pin);
+	myLCD.LCDinit(LCDcontrast, LCDRAMADDRCTRL);
+	if (myLCD.LCDSetBufferPtr(myLCDwidth, myLCDheight, screenBuffer, sizeof(screenBuffer)) != 0)
+	{
+		printf("SetupTest : ERROR : LCDSetBufferPtr Failed!\r\n");
+		while (1)
+		{
+			busy_wait_ms(1000);
+		}
+	}							  // Initialize the buffer
+	myLCD.LCDFillScreen(0xF0, 0); // splash screen bars
+	busy_wait_ms(1000);
+}
+
+void EndTest()
+{
+	myLCD.LCDPowerDown();  // Switch off display
+	spi_deinit(mySpiInst); // Turn off SPI
+	printf("LCD ERM19264 :: End\r\n");
+}
+
+// Test 301 Init buffer with full screen bitmap on startup
+void Test301(void)
+{
 	myLCD.LCDupdate();
 	busy_wait_ms(5000);
 	myLCD.LCDclearBuffer(); // Clear active buffer
@@ -185,11 +203,11 @@ void Test1(void)
 	busy_wait_ms(1000);
 }
 
-// Test 2 LCDBitmap write direct to screen
-void Test2(void)
+// Test 302 LCDBitmap write direct to screen
+void Test302(void)
 {
 	// 'image2 'lighting symbols', 84x24px  data vertical addressed
-	const uint8_t image2[252 + 1] = {
+	const uint8_t lightingImage[252] = {
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0x7f, 0x7f, 0x3f, 0x3f, 0x1f, 0x0f, 0x0f, 0x07, 0x87, 0xc3, 0xe3, 0xf9, 0xfd, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -207,47 +225,45 @@ void Test2(void)
 		0x9f, 0xc7, 0xc3, 0xe1, 0xe0, 0xf0, 0xf0, 0xf8, 0xfc, 0xfc, 0xfe, 0xfe, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
-	myLCD.LCDBitmap(5, 5, 84, 24, image2); // no buffer
+	myLCD.LCDBitmap(5, 5, 84, 24, lightingImage); // no buffer
 	busy_wait_ms(5000);
 	myLCD.LCDFillScreen(0x00, 0); // Clears screen, no buffer
 	busy_wait_ms(1000);
 }
 
-// test (3) Draw a vertically addressed bitmap to screen with drawBitmap method
-void Test3(void)
+// test (303) Draw a vertically addressed bitmap to screen with drawBitmap method
+void Test303(void)
 {
 
-	// 'small Bitmap', 20x20px bitmap bi-colour Vertical addressed Test 3
-	const uint8_t smallBitmapVa[60] = {
-		0xff, 0x3f, 0x0f, 0x07, 0x03, 0x13, 0x33, 0x39, 0x39, 0x79, 0xf9, 0xf9, 0xfb, 0xf3, 0xf7, 0xe3,
-		0x87, 0x0f, 0x1f, 0xff, 0xf9, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x0f,
-		0x1d, 0x19, 0x10, 0x19, 0x0f, 0x00, 0xc0, 0xf0, 0x0f, 0x0f, 0x0f, 0x0e, 0x0c, 0x0c, 0x08, 0x08,
-		0x08, 0x00, 0x00, 0x08, 0x08, 0x08, 0x0c, 0x0c, 0x0e, 0x0f, 0x0f, 0x0f};
+	// temperature Sun image, 16x16px , vertical addressed  test 303
+	const uint8_t TemperatureImageVa[32] = {
+		0xff, 0xdf, 0xdf, 0xff, 0x1f, 0x09, 0x0f, 0x07, 0x07, 0x0f, 0x09, 0x1f, 0xff, 0xdf, 0xdf, 0xff,
+		0xff, 0xfb, 0xfb, 0xff, 0xf8, 0x90, 0xf0, 0xe0, 0xe0, 0xf0, 0x90, 0xf8, 0xff, 0xfb, 0xfb, 0xff};
 
 	myLCD.LCDclearBuffer();
 	myLCD.setDrawBitmapAddr(true); // for Bitmap Data Vertical  addressed
-	myLCD.drawBitmap(0, 0, smallBitmapVa, 20, 20, FOREGROUND, BACKGROUND);
-	myLCD.drawBitmap(30, 20, smallBitmapVa, 20, 20, BACKGROUND, FOREGROUND);
+	myLCD.drawBitmap(0, 0, TemperatureImageVa, 16, 16, FG_COLOR, BG_COLOR, sizeof(TemperatureImageVa));
+	myLCD.drawBitmap(30, 20, TemperatureImageVa, 16, 16, BG_COLOR, FG_COLOR, sizeof(TemperatureImageVa));
 	myLCD.LCDupdate();
 	busy_wait_ms(10000);
 }
 
-//   test  (4) Draw a Horizontally addressed bitmap to screen with drawBitmap method
-void Test4(void)
+//   test  304 Draw a Horizontally addressed bitmap to screen with drawBitmap method
+void Test304(void)
 {
 
-	// 'small Bitmap', 20x20px bitmap bi-colour horizontal addressed Test 4
-	const uint8_t smallBitmapHa[60] = {
-		0xff, 0xff, 0xf0, 0xfe, 0x0f, 0xf0, 0xf0, 0x02, 0xf0, 0xe1, 0xf8, 0x70,
-		0xc7, 0xfe, 0x30, 0xc3, 0xff, 0x10, 0x80, 0x7f, 0x10, 0x80, 0x3f, 0x90,
-		0x80, 0x3d, 0x80, 0x00, 0x30, 0x80, 0x00, 0x18, 0x80, 0x80, 0x1d, 0x80,
-		0x80, 0x0f, 0x10, 0x80, 0x00, 0x10, 0xc0, 0x00, 0x30, 0xc0, 0x00, 0x30,
-		0xe0, 0x00, 0x70, 0xf0, 0x00, 0xf0, 0xfc, 0x03, 0xf0, 0xff, 0x9f, 0xf0};
+	// SUN In text 40x16 horizontally addressed
+	const uint8_t SunTextImage[80] = {
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3F, 0xF1, 0x81, 0x8F, 0xFC, 0x3F,
+		0xF1, 0x81, 0x8F, 0xFC, 0x30, 0x31, 0x81, 0x8C, 0x0C, 0x30, 0x01, 0x81, 0x8C, 0x0C, 0x30, 0x01,
+		0x81, 0x8C, 0x0C, 0x3F, 0xF1, 0x81, 0x8C, 0x0C, 0x3F, 0xF1, 0x81, 0x8C, 0x0C, 0x00, 0x31, 0x81,
+		0x8C, 0x0C, 0x00, 0x31, 0x81, 0x8C, 0x0C, 0x30, 0x31, 0x81, 0x8C, 0x0C, 0x3F, 0xF1, 0xFF, 0x8C,
+		0x0C, 0x3F, 0xF1, 0xFF, 0x8C, 0x0C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 	myLCD.LCDclearBuffer();			// Clear active buffer
 	myLCD.setDrawBitmapAddr(false); // for Bitmap Data Horizontal addressed
-	myLCD.drawBitmap(40, 10, smallBitmapHa, 20, 20, FOREGROUND, BACKGROUND);
-	myLCD.drawBitmap(100, 20, smallBitmapHa, 20, 20, BACKGROUND, FOREGROUND);
+	myLCD.drawBitmap(40, 10, SunTextImage, 40, 16, FG_COLOR, BG_COLOR, sizeof(SunTextImage));
+	myLCD.drawBitmap(100, 20, SunTextImage, 40, 16, BG_COLOR, FG_COLOR, sizeof(SunTextImage));
 	myLCD.LCDupdate();
 	busy_wait_ms(10000);
 }
@@ -259,9 +275,9 @@ void ClearScreen(void)
 	busy_wait_ms(2000);
 }
 
-void Test5(void)
+void Test305(void)
 {
-
+	myLCD.setFont(pFontArialBold);
 	unsigned long previousMillis = 0; // will store last time  was updated:
 	const long interval = 1000;		  // interval  (milliseconds)
 	uint8_t sec = 1;
@@ -271,29 +287,28 @@ void Test5(void)
 	char value[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
 	// bitmaps
-	const uint8_t Signal816[16] = // mobile signal 16x8px
+	const uint8_t SignalIcon[16] = // mobile signal 16x8px
 		{0x03, 0x05, 0x09, 0xff, 0x09, 0x05, 0xf3, 0x00, 0xf8, 0x00, 0xfc, 0x00, 0xfe, 0x00, 0xff, 0x00};
-	const uint8_t Msg816[16] = // message  , 16x8px
+	const uint8_t MsgIcon[16] = // message  , 16x8px
 		{0x00, 0x00, 0x00, 0xff, 0x85, 0x89, 0x91, 0x91, 0x91, 0x91, 0x89, 0x85, 0xff, 0x00, 0x00, 0x00};
-	const uint8_t Bat816[16] = // 'battery', 16x8px
+	const uint8_t BatteryIcon[16] = // 'battery', 16x8px
 		{0x00, 0x00, 0x7e, 0x42, 0x81, 0xbd, 0xbd, 0x81, 0xbd, 0xbd, 0x81, 0xbd, 0xbd, 0x81, 0xff, 0x00};
-	const uint8_t Bluetooth88[8] = // 'bluetooth', 8x8px
+	const uint8_t BluetoothIcon[8] = // 'bluetooth', 8x8px
 		{0x00, 0x42, 0x24, 0xff, 0x99, 0x5a, 0x24, 0x00};
-	const uint8_t GPRS88[8] = // 'gprs88', 8x8px
+	const uint8_t GPRSIcon[8] = // 'gprs88', 8x8px
 		{0xc3, 0x81, 0x3c, 0x42, 0x52, 0x34, 0x81, 0xc3};
-	const uint8_t Alarm88[8] = // 'alarm', 8x8px
+	const uint8_t AlarmIcon[8] = // 'alarm', 8x8px
 		{0x83, 0xbd, 0x42, 0x4a, 0x52, 0x52, 0xbd, 0x83};
 
-	myLCD.setTextColor(FOREGROUND);
-	myLCD.setTextSize(1);
 	myLCD.setDrawBitmapAddr(true); // for Bitmap Data Vertical  addressed
-	myLCD.drawBitmap(4, 0, Signal816, 16, 8, FOREGROUND, BACKGROUND);
-	myLCD.drawBitmap(24, 0, Bluetooth88, 8, 8, FOREGROUND, BACKGROUND);
-	myLCD.drawBitmap(40, 0, Msg816, 16, 8, FOREGROUND, BACKGROUND);
-	myLCD.drawBitmap(64, 0, GPRS88, 8, 8, FOREGROUND, BACKGROUND);
-	myLCD.drawBitmap(90, 0, Alarm88, 8, 8, FOREGROUND, BACKGROUND);
-	myLCD.drawBitmap(112, 0, Bat816, 16, 8, FOREGROUND, BACKGROUND);
-
+	myLCD.drawBitmap(4, 0, SignalIcon, 16, 8, FG_COLOR, BG_COLOR, sizeof(SignalIcon));
+	myLCD.drawBitmap(44, 0, BluetoothIcon, 8, 8, FG_COLOR, BG_COLOR, sizeof(BluetoothIcon));
+	myLCD.drawBitmap(60, 0, MsgIcon, 16, 8, FG_COLOR, BG_COLOR, sizeof(MsgIcon));
+	myLCD.drawBitmap(84, 0, GPRSIcon, 8, 8, FG_COLOR, BG_COLOR, sizeof(GPRSIcon));
+	myLCD.drawBitmap(98, 0, AlarmIcon, 8, 8, FG_COLOR, BG_COLOR, sizeof(AlarmIcon));
+	myLCD.drawBitmap(160, 0, BatteryIcon, 16, 8, FG_COLOR, BG_COLOR, sizeof(BatteryIcon));
+	myLCD.drawFastHLine(0, 20, 192, FG_COLOR);
+	myLCD.drawFastHLine(0, 48, 192, FG_COLOR);
 	while (count < 30)
 	{
 		unsigned long currentMillis = to_ms_since_boot(get_absolute_time());
@@ -318,14 +333,14 @@ void Test5(void)
 				}
 			}
 
-			myLCD.drawChar(0, 32, value[Hour / 10], FOREGROUND, BACKGROUND, 3);
-			myLCD.drawChar(16, 32, value[Hour % 10], FOREGROUND, BACKGROUND, 3);
-			myLCD.drawChar(32, 32, ':', FOREGROUND, BACKGROUND, 3);
-			myLCD.drawChar(48, 32, value[Min / 10], FOREGROUND, BACKGROUND, 3);
-			myLCD.drawChar(66, 32, value[Min % 10], FOREGROUND, BACKGROUND, 3);
-			myLCD.drawChar(80, 32, ':', FOREGROUND, BACKGROUND, 3);
-			myLCD.drawChar(96, 32, value[sec / 10], FOREGROUND, BACKGROUND, 3);
-			myLCD.drawChar(112, 32, value[sec % 10], FOREGROUND, BACKGROUND, 3);
+			myLCD.writeChar(16, 32, value[Hour / 10]);
+			myLCD.writeChar(32, 32, value[Hour % 10]);
+			myLCD.writeChar(48, 32, ':');
+			myLCD.writeChar(66, 32, value[Min / 10]);
+			myLCD.writeChar(80, 32, value[Min % 10]);
+			myLCD.writeChar(96, 32, ':');
+			myLCD.writeChar(112, 32, value[sec / 10]);
+			myLCD.writeChar(128, 32, value[sec % 10]);
 			myLCD.LCDupdate();
 		}
 	}

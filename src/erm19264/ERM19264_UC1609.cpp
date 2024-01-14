@@ -1,35 +1,43 @@
-/*
- * Project Name: ERM19264_UC1609
- * File: ERM19264_UC1609.cpp
- * Description: ERM19264 LCD driven by UC1609C controller source file
- * Author: Gavin Lyons.
- * URL: https://github.com/gavinlyonsrepo/ERM19264_UC1609_PICO
- */
+/*!
+	@file ERM19264_UC1609.cpp
+	@brief ERM19264 LCD driven by UC1609C controller, src file. 
+	@author Gavin Lyons.
+	@details Project Name: ERM19264_UC1609_PICO <https://github.com/gavinlyonsrepo/ERM19264_UC1609_PICO>
+*/
 
 #include "../include/erm19264/ERM19264_UC1609.hpp"
 
-// Class Constructor
-ERM19264_UC1609 ::ERM19264_UC1609(int8_t cd, int8_t rst, int8_t cs, int8_t sclk, int8_t din) : ERM19264_graphics(LCD_WIDTH, LCD_HEIGHT)
+/*!
+	@brief init the LCD class object
+	@param lcdwidth width of LCD in pixels
+	@param lcdheight height of LCD in pixels
+ */
+ERM19264_UC1609::ERM19264_UC1609(int16_t lcdwidth, int16_t lcdheight) : ERM19264_graphics(lcdwidth, lcdheight)
+{
+	_LCD_HEIGHT = lcdheight;
+	_LCD_WIDTH = lcdwidth;
+	_LCD_PAGE_NUM = (_LCD_HEIGHT / 8);
+	_bufferWidth = _LCD_WIDTH;
+	_bufferHeight = _LCD_HEIGHT;
+}
 
+/*!
+	@brief initialise LCD pinmodes and SPI setup
+	@param spiType SPi instance to initialize
+    @param spiSpeedKhz SPI baud rate in Khz
+	@param cd GPIO data or command 
+	@param rst GPIO reset
+	@param cs GPIO Chip select
+	@param sclk GPIO SPI Clock
+	@param din GPIO MOSI
+ */
+void ERM19264_UC1609::LCDSPISetup(spi_inst_t* spiType, uint32_t spiSpeedKhz,int8_t cd, int8_t rst, int8_t cs, int8_t sclk, int8_t din)
 {
 	_LCD_CD = cd;
 	_LCD_RST = rst;
 	_LCD_CS = cs;
 	_LCD_DIN = din;
 	_LCD_SCLK = sclk;
-}
-
-// Desc: begin Method initialise LCD
-// Sets pinmodes and SPI setup
-// Param1: VBiasPOT default = 0x49 , range 0x00 to 0xFE
-// Param2: SPI interface 
-// Param3: SPI baud rate in Khz
-// Param4: AddressSet AC [2:0] registers for RAM addr ctrl. default=2 range 0-7
-void ERM19264_UC1609::LCDbegin(uint8_t VbiasPOT, spi_inst_t *spiType, uint32_t spiSpeedKhz, uint8_t AddressSet)
-{
-	_VbiasPOT = VbiasPOT;
-	if (AddressSet > 7 ) AddressSet = 0x02;
-	_AddressCtrl =  AddressSet;
 
 	gpio_init(_LCD_CD);
 	gpio_init(_LCD_RST);
@@ -56,13 +64,18 @@ void ERM19264_UC1609::LCDbegin(uint8_t VbiasPOT, spi_inst_t *spiType, uint32_t s
 				   SPI_CPHA_0, // Phase (CPHA)
 				   SPI_MSB_FIRST);
 
-	LCDinit();
 }
 
-// Desc: Called from LCDbegin carries out Power on sequence and register init
-// Can be used to reset LCD to default values.
-void ERM19264_UC1609::LCDinit()
+/*!
+	@brief begin Method initialise LCD
+	@param VbiasPOT contrast default = 0x49 , range 0x00 to 0xFE
+	@param AddressSet AC [2:0] registers for RAM addr ctrl. default=2 range 0-7
+ */
+void ERM19264_UC1609::LCDinit(uint8_t VbiasPOT, uint8_t AddressSet)
 {
+	_VbiasPOT = VbiasPOT;
+	if (AddressSet > 7 ) AddressSet = 0x02;
+	_AddressCtrl =  AddressSet;
 	UC1609_CD_SetHigh;
 	UC1609_CS_SetHigh;
 	busy_wait_ms(UC1609_INIT_DELAY2);
@@ -87,9 +100,12 @@ void ERM19264_UC1609::LCDinit()
 	UC1609_CS_SetHigh;
 }
 
-// Desc: Sends a command to the display
-// Param1: the command
-// Param2: the values to change
+/*!
+	 @brief Sends a command to the display
+	 @param command Command to send
+	 @param value the values to change
+	 @note command and value  will be combined with OR
+*/
 void ERM19264_UC1609::send_command(uint8_t command, uint8_t value)
 {
 	UC1609_CD_SetLow;
@@ -97,8 +113,10 @@ void ERM19264_UC1609::send_command(uint8_t command, uint8_t value)
 	UC1609_CD_SetHigh;
 }
 
-// Desc: Resets LCD in a four wire setup called at start
-// and  should also be called in a controlled power down setting
+/*!
+	@brief Resets LCD in a four wire setup called at start
+	and  should also be called in a controlled power down setting
+*/
 void ERM19264_UC1609::LCDReset()
 {
 	UC1609_RST_SetLow;
@@ -107,7 +125,9 @@ void ERM19264_UC1609::LCDReset()
 	busy_wait_ms(UC1609_RESET_DELAY2);
 }
 
-// Desc: Powerdown procedure for LCD see datasheet P40
+/*!
+	@brief Powerdown procedure for LCD see datasheet P40
+*/
 void ERM19264_UC1609::LCDPowerDown(void)
 {
 	LCDReset();
@@ -119,8 +139,10 @@ void ERM19264_UC1609::LCDPowerDown(void)
 	UC1609_SDA_SetLow;
 }
 
-// Desc: turns on display
-// Param1: bits 1  on , 0 off
+/*!
+	 @brief Turns On Display
+	 @param bits  1  display on , 0 display off
+*/
 void ERM19264_UC1609::LCDEnable(uint8_t bits)
 {
 	UC1609_CS_SetLow;
@@ -128,12 +150,13 @@ void ERM19264_UC1609::LCDEnable(uint8_t bits)
 	UC1609_CS_SetHigh;
 }
 
-// Desc: Scroll the displayed image up by SL rows.
-// The valid SL value is between 0 (for no
-// scrolling) and (64).
-// Setting SL outside of this range causes undefined effect on the displayed
-// image.
-// Param1: bits 0-64 line number y-axis
+/*!
+	@brief Scroll the displayed image up by SL rows.
+	@details The valid SL value is between 0 (for no
+		scrolling) and (64).
+		Setting SL outside of this range causes undefined effect on the displayed image.
+	@param bits 0-64 line number y-axis
+*/
 void ERM19264_UC1609::LCDscroll(uint8_t bits)
 {
 	UC1609_CS_SetLow;
@@ -141,11 +164,13 @@ void ERM19264_UC1609::LCDscroll(uint8_t bits)
 	UC1609_CS_SetHigh;
 }
 
-// Desc: Rotates the display
-// Set LC[2:1] for COM (row) mirror (MY), SEG (column) mirror (MX).
-// Param1: 4 possible values 000 010 100 110 (defined)
-// If Mx is changed the buffer must BE updated
-void ERM19264_UC1609::LCDrotate(uint8_t rotatevalue)
+/*!
+	@brief Rotates the display using LCD built-in rotate commands
+	@details Set LC[2:1] for COM (row) mirror (MY), SEG (column) mirror (MX).
+		Param1: 4 possible values 000 010 100 110 (defined)
+	@note If Mx is changed the buffer must BE updated see examples. 
+*/
+void ERM19264_UC1609::LCDsetRotateCmd(uint8_t rotatevalue)
 {
 	UC1609_CS_SetLow;
 	switch (rotatevalue)
@@ -170,19 +195,23 @@ void ERM19264_UC1609::LCDrotate(uint8_t rotatevalue)
 	UC1609_CS_SetHigh;
 }
 
-// Desc: invert the display
-// Param1: bits, 1 invert , 0 normal
-void ERM19264_UC1609::invertDisplay(uint8_t bits)
+/*!
+	 @brief invert the display
+	 @param bits 1 invert , 0 normal
+*/
+void ERM19264_UC1609::LCDInvertDisplay(uint8_t bits)
 {
 	UC1609_CS_SetLow;
 	send_command(UC1609_INVERSE_DISPLAY, bits);
 	UC1609_CS_SetHigh;
 }
 
-// Desc: turns on all Pixels
-// Param1: bits Set DC[1] to force all SEG drivers to output ON signals
-// 1 all on ,  0 all off
-void ERM19264_UC1609::LCDallpixelsOn(uint8_t bits)
+/*!
+	@brief turns on all Pixels
+	@param bits Set DC[1] to force all SEG drivers to output ON signals
+	1 all on ,  0 all off
+*/
+void ERM19264_UC1609::LCDAllpixelsOn(uint8_t bits)
 {
 
 	UC1609_CS_SetLow;
@@ -190,14 +219,16 @@ void ERM19264_UC1609::LCDallpixelsOn(uint8_t bits)
 	UC1609_CS_SetHigh;
 }
 
-// Desc: Fill the screen NOT the buffer with a datapattern
-// Param1: datapattern can be set to zero to clear screen (not buffer) range 0x00 to 0ff
-// Param2: optional delay in microseconds can be set to zero normally.
+/*!
+	@brief Fill the screen NOT the buffer with a datapattern
+	@param dataPattern can be set to zero to clear screen (not buffer) range 0x00 to 0ff
+	@param delay optional delay in microseconds can be set to zero normally.
+*/
 void ERM19264_UC1609::LCDFillScreen(uint8_t dataPattern = 0, uint8_t delay = 0)
 {
 
 	UC1609_CS_SetLow;
-	uint16_t numofbytes = LCD_WIDTH * (LCD_HEIGHT / 8); // width * height
+	uint16_t numofbytes = _LCD_WIDTH * (_LCD_HEIGHT / 8); // width * height
 	for (uint16_t i = 0; i < numofbytes; i++)
 	{
 		send_data(dataPattern);
@@ -206,12 +237,14 @@ void ERM19264_UC1609::LCDFillScreen(uint8_t dataPattern = 0, uint8_t delay = 0)
 	UC1609_CS_SetHigh;
 }
 
-// Desc: Fill the chosen page(1-8)  with a datapattern
-// Param1: datapattern can be set to 0 to FF (not buffer)
+/*!
+	 @brief Fill the chosen page at cursor  with a datapattern
+	 @param dataPattern can be set to 0 to FF (not buffer)
+*/
 void ERM19264_UC1609::LCDFillPage(uint8_t dataPattern = 0)
 {
 	UC1609_CS_SetLow;
-	uint16_t numofbytes = ((LCD_WIDTH * (LCD_HEIGHT / 8)) / 8); // (width * height/8)/8 = 192 bytes
+	uint16_t numofbytes = ((_LCD_WIDTH * (_LCD_HEIGHT / 8)) / 8); // (width * height/8)/8 = 192 bytes
 	for (uint16_t i = 0; i < numofbytes; i++)
 	{
 		send_data(dataPattern);
@@ -219,12 +252,15 @@ void ERM19264_UC1609::LCDFillPage(uint8_t dataPattern = 0)
 	UC1609_CS_SetHigh;
 }
 
-// Desc: Draw a bitmap in  to the screen
-// Param1: x offset 0-192
-// Param2: y offset 0-64
-// Param3: width 0-192
-// Param4 height 0-64
-// Param5 the bitmap
+/*!
+	 @brief Draw a bitmap in direct to screen to the screen
+	 @param x offset 0-192
+	 @param y offset 0-64
+	 @param w width 0-192
+	 @param h height 0-64
+	 @param data  pointer to the bitmap  data
+	 @note No buffer used. Data drawn onto screen directly
+*/
 void ERM19264_UC1609::LCDBitmap(int16_t x, int16_t y, uint8_t w, uint8_t h, const uint8_t *data)
 {
 	UC1609_CS_SetLow;
@@ -236,7 +272,7 @@ void ERM19264_UC1609::LCDBitmap(int16_t x, int16_t y, uint8_t w, uint8_t h, cons
 
 	for (ty = 0; ty < h; ty = ty + 8)
 	{
-		if (y + ty < 0 || y + ty >= LCD_HEIGHT)
+		if (y + ty < 0 || y + ty >= _LCD_HEIGHT)
 		{
 			continue;
 		}
@@ -246,7 +282,7 @@ void ERM19264_UC1609::LCDBitmap(int16_t x, int16_t y, uint8_t w, uint8_t h, cons
 
 		for (tx = 0; tx < w; tx++)
 		{
-			if (x + tx < 0 || x + tx >= LCD_WIDTH)
+			if (x + tx < 0 || x + tx >= _LCD_WIDTH)
 			{
 				continue;
 			}
@@ -257,36 +293,47 @@ void ERM19264_UC1609::LCDBitmap(int16_t x, int16_t y, uint8_t w, uint8_t h, cons
 	UC1609_CS_SetHigh;
 }
 
-// Desc: Send data byte with SPI to UC1609C
-// Param1: the data byte
+/*!
+	 @brief Send data byte with SPI to UC1609
+	 @param byte the data byte to send 
+*/
 void ERM19264_UC1609::send_data(uint8_t data)
 {
 	spi_write_blocking(_spiInterface, &data, 1);
 }
 
-// Desc: updates the buffer i.e. writes it to the screen
+/*!
+	 @brief updates the LCD  i.e. writes the  shared buffer to the active screen
+		pointed to by ActiveBuffer
+*/
 void ERM19264_UC1609::LCDupdate()
 {
 	uint8_t x = 0;
 	uint8_t y = 0;
-	uint8_t w = this->bufferWidth;
-	uint8_t h = this->bufferHeight;
-	LCDBuffer(x, y, w, h, (uint8_t *)this->LCDbuffer);
+	uint8_t w = this->_bufferWidth;
+	uint8_t h = this->_bufferHeight;
+	LCDBuffer(x, y, w, h, (uint8_t *)this->_LCDbuffer);
 }
 
-// Desc: clears the buffer i.e. does NOT write to the screen
+/*!
+	 @brief clears the buffer of the active screen pointed to by ActiveBuffer 
+	 @note Does NOT write to the screen
+*/
 void ERM19264_UC1609::LCDclearBuffer()
 {
-	memset(this->LCDbuffer, 0x00, (this->bufferWidth * (this->bufferHeight / 8)));
+	memset(this->_LCDbuffer, 0x00, (this->_bufferWidth * (this->_bufferHeight / 8)));
 }
 
-// Desc: Draw a bitmap to the screen
-// Param1: x offset 0-192
-// Param2: y offset 0-64
-// Param3: width 0-192
-// Param4 height 0-64
-// Param5 the bitmap
-void ERM19264_UC1609::LCDBuffer(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t *data)
+/*!
+	 @brief Draw a data array  to the screen
+	 @param x offset 0-192
+	 @param y offset 0-64
+	 @param w width 0-192
+	 @param h height 0-64
+	 @param data pointer to the data array
+	 @note Called by LCDupdate internally to write buffer to screen , can be called standalone 	as well
+*/
+void ERM19264_UC1609::LCDBuffer(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t* data)
 {
 	UC1609_CS_SetLow;
 
@@ -297,7 +344,7 @@ void ERM19264_UC1609::LCDBuffer(int16_t x, int16_t y, uint8_t w, uint8_t h, uint
 
 	for (ty = 0; ty < h; ty = ty + 8)
 	{
-		if (y + ty < 0 || y + ty >= LCD_HEIGHT)
+		if (y + ty < 0 || y + ty >= _LCD_HEIGHT)
 		{
 			continue;
 		}
@@ -308,7 +355,7 @@ void ERM19264_UC1609::LCDBuffer(int16_t x, int16_t y, uint8_t w, uint8_t h, uint
 
 		for (tx = 0; tx < w; tx++)
 		{
-			if (x + tx < 0 || x + tx >= LCD_WIDTH)
+			if (x + tx < 0 || x + tx >= _LCD_WIDTH)
 			{
 				continue;
 			}
@@ -320,27 +367,96 @@ void ERM19264_UC1609::LCDBuffer(int16_t x, int16_t y, uint8_t w, uint8_t h, uint
 	UC1609_CS_SetHigh;
 }
 
-// Desc: Draws a Pixel to the screen overides the custom graphics library
-// Passed x and y co-ords and colour of pixel.
+/*!
+	@brief Draws a Pixel to the screen , overrides the  graphics library 
+	@param x x co-ord of pixel
+	@param y y co-ord of pixel
+	@param colour colour of  pixel
+*/
 void ERM19264_UC1609::drawPixel(int16_t x, int16_t y, uint8_t colour)
 {
-	if ((x < 0) || (x >= this->bufferWidth) || (y < 0) || (y >= this->bufferHeight))
+	if ((x < 0) || (x >= this->_bufferWidth) || (y < 0) || (y >= this->_bufferHeight))
 	{
 		return;
 	}
-	uint16_t tc = (bufferWidth * (y / 8)) + x;
+
+	int16_t temp;
+	uint8_t RotateMode = getRotation();
+	switch (RotateMode) {
+	case 1:
+		temp = x;
+		x = WIDTH - 1 - y;
+		y = temp;
+	break;
+	case 2:
+		x = WIDTH - 1 - x;
+		y = HEIGHT - 1 - y;
+	break;
+	case 3:
+		temp = x;
+		x = y;
+		y = HEIGHT - 1 - temp;
+	break;
+	}
+	uint16_t tc = (_bufferWidth * (y / 8)) + x;
 	switch (colour)
 	{
-	case FOREGROUND:
-		this->LCDbuffer[tc] |= (1 << (y & 7));
+	case FG_COLOR: //1
+		this->_LCDbuffer[tc] |= (1 << (y & 7));
 		break;
-	case BACKGROUND:
-		this->LCDbuffer[tc] &= ~(1 << (y & 7));
+	case BG_COLOR: //0
+		this->_LCDbuffer[tc] &= ~(1 << (y & 7));
 		break;
 	case INVERSE:
-		this->LCDbuffer[tc] ^= (1 << (y & 7));
+		this->_LCDbuffer[tc] ^= (1 << (y & 7));
 		break;
 	}
 }
+/*!
+	@brief sets the buffer pointer to the users screen data buffer
+	@param width width of buffer in pixels
+	@param height height of buffer in pixels
+	@param pBuffer the buffer array which decays to pointer
+	@param sizeOfBuffer size of buffer
+	@return Will return:
+		-# 0. Success
+		-# 2. Buffer size calculations are incorrect BufferSize = w * (h/8),
+		-# 3. Not a valid pointer object.
+*/
+uint8_t ERM19264_UC1609::LCDSetBufferPtr(uint8_t width, uint8_t height, uint8_t *pBuffer, uint16_t sizeOfBuffer)
+{
+	if (sizeOfBuffer != width * (height / 8))
+	{
+		printf("ERM19264::::LCDSetBufferPtr Error 2: buffer size does not equal: w * (h/8))\r\n");
+		return 2;
+	}
+	_LCDbuffer = pBuffer;
+	if (_LCDbuffer == nullptr)
+	{
+		printf("ERM19264::::LCDSetBufferPtr Error 3: Problem assigning buffer pointer\r\n");
+		return 3;
+	}
+	return 0;
+}
+
+/*!
+	 @brief Goes to X Y position
+	 @param  column Column 0-192
+	 @param page 0-7
+*/
+void ERM19264_UC1609::LCDGotoXY(uint8_t column , uint8_t page)
+{
+        UC1609_CS_SetLow;
+        send_command(UC1609_SET_COLADD_LSB, (column & 0x0F)); 
+        send_command(UC1609_SET_COLADD_MSB, (column & 0xF0) >> 4);
+        send_command(UC1609_SET_PAGEADD, page++); 
+        UC1609_CS_SetHigh;
+}
+
+/*!
+	@brief getter for Library version number
+	@return the version number 101 is 1.0.1
+*/
+uint16_t ERM19264_UC1609::GetLibVerNum(void) { return _LCDLibVerNum; }
 
 //***********************************************

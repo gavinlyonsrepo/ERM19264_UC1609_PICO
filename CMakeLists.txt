@@ -1,16 +1,16 @@
 # Set minimum required version of CMake
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.18)
 
 # Include build functions from Pico SDK
 include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
 # Set name of project (as PROJECT_NAME) and C/C++ standards
 project(erm19264 C CXX ASM)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_C_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 # turn on all compiler warnings 
-add_compile_options(-Wall)
+add_compile_options(-Wall -Wextra)
 
 # Creates a pico-sdk subdirectory in our project for the libraries
 pico_sdk_init()
@@ -18,7 +18,8 @@ pico_sdk_init()
 # Tell CMake where to find the executable source file
 add_executable(${PROJECT_NAME} 
   examples/ERM19264_UC1609_HELLO/main.cpp
-  #examples/ERM19264_UC1609_MISC/main.cpp
+  #examples/ERM19264_TEXT_GRAPHICS/main.cpp
+  #examples/ERM19264_UC1609_FPS_FUNCTIONS/main.cpp
   #examples/ERM19264_UC1609_BITMAP/main.cpp
  
 )
