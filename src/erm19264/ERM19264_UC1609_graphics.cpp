@@ -1,6 +1,6 @@
 /*!
 	@file ERM19264_UC1609_graphics.cpp
-	@brief ER_LCDM1 LCD driven by UC1609 controller source file
+	@brief  LCD driven by UC1609 controller source file
 		for the graphics  based functions. Project Name: ERM19264_UC1609_PICO
 	@author  Gavin Lyons
 */
@@ -500,13 +500,13 @@ void ERM19264_graphics::fillTriangle(int16_t x0, int16_t y0,
 	@brief Draw a 1-bit color bitmap
 	@param x x co-ord position
 	@param y y co-ord posiiton a
-	@param bitmap pointer to bitmap data (must be PROGMEM memory)
+	@param bitmap pointer to bitmap data
 	@param w width of the bitmap
 	@param h height of the bitmap
 	@param color foreground colour
 	@param bg background colour.
 	@param sizeOfBitmap size of the bitmap
-	@return Will return true for success, false for failure
+	@return Will return 0x00 for success, non-zero for failure
 		Failure could be  out of bounds , wrong size , invalid pointer object.
 	@note Variable drawBitmapAddr controls data addressing
 		-# drawBitmapAddr  = true Vertical  data addressing
@@ -523,13 +523,13 @@ uint8_t ERM19264_graphics::drawBitmap(int16_t x, int16_t y,
 
 	// User error checks
 	// 1. Completely out of bounds?
-	if (x > WIDTH || y > HEIGHT)
+	if (x > _width || y > _height)
 	{
 		printf("Error drawBitmap 2 : Bitmap co-ord out of bounds, check x and y\n");
 		return 2;
 	}
 	// 2. bitmap weight and height
-	if (w > WIDTH || h > HEIGHT)
+	if (w > _width || h > _height)
 	{
 		printf("Error drawBitmap 3 : Bitmap is larger than screen, check w and h\n");
 		return 3;
