@@ -17,8 +17,6 @@ ERM19264_UC1609::ERM19264_UC1609(int16_t lcdwidth, int16_t lcdheight) : ERM19264
 	_LCD_HEIGHT = lcdheight;
 	_LCD_WIDTH = lcdwidth;
 	_LCD_PAGE_NUM = (_LCD_HEIGHT / 8);
-	_bufferWidth = _LCD_WIDTH;
-	_bufferHeight = _LCD_HEIGHT;
 }
 
 /*!
@@ -169,6 +167,8 @@ void ERM19264_UC1609::LCDscroll(uint8_t bits)
 	@details Set LC[2:1] for COM (row) mirror (MY), SEG (column) mirror (MX).
 		Param1: 4 possible values 000 010 100 110 (defined)
 	@note If Mx is changed the buffer must BE updated see examples. 
+		This rotates the display based on LCD commands. It is also 
+		possible to rotate software buffer using setRotation method
 */
 void ERM19264_UC1609::LCDsetRotateCmd(uint8_t rotatevalue)
 {
@@ -310,8 +310,8 @@ void ERM19264_UC1609::LCDupdate()
 {
 	uint8_t x = 0;
 	uint8_t y = 0;
-	uint8_t w = this->_bufferWidth;
-	uint8_t h = this->_bufferHeight;
+	uint8_t w = this->_LCD_WIDTH;
+	uint8_t h = this->_LCD_HEIGHT;
 	LCDBuffer(x, y, w, h, (uint8_t *)this->_LCDbuffer);
 }
 
@@ -321,7 +321,7 @@ void ERM19264_UC1609::LCDupdate()
 */
 void ERM19264_UC1609::LCDclearBuffer()
 {
-	memset(this->_LCDbuffer, 0x00, (this->_bufferWidth * (this->_bufferHeight / 8)));
+	memset(this->_LCDbuffer, 0x00, (this->_LCD_WIDTH * (this->_LCD_HEIGHT / 8)));
 }
 
 /*!
@@ -375,7 +375,7 @@ void ERM19264_UC1609::LCDBuffer(int16_t x, int16_t y, uint8_t w, uint8_t h, uint
 */
 void ERM19264_UC1609::drawPixel(int16_t x, int16_t y, uint8_t colour)
 {
-	if ((x < 0) || (x >= this->_bufferWidth) || (y < 0) || (y >= this->_bufferHeight))
+	if ((x < 0) || (x >= this->_width) || (y < 0) || (y >= this->_height))
 	{
 		return;
 	}
@@ -398,7 +398,7 @@ void ERM19264_UC1609::drawPixel(int16_t x, int16_t y, uint8_t colour)
 		y = HEIGHT - 1 - temp;
 	break;
 	}
-	uint16_t tc = (_bufferWidth * (y / 8)) + x;
+	uint16_t tc = (_LCD_WIDTH * (y / 8)) + x;
 	switch (colour)
 	{
 	case FG_COLOR: //1

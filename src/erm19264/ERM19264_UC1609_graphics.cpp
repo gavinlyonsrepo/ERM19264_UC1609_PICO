@@ -717,7 +717,7 @@ uint8_t ERM19264_graphics::writeChar(int16_t x, int16_t y, char value)
 	// 2. Check for character out of font range bounds
 	if (value < _FontOffset || value >= (_FontOffset + _FontNumChars + 1))
 	{
-		printf("ERM19264_graphics::writeChar Error 3: Character out of Font bounds  %u : %u<->%u \r\n", value, _FontOffset, _FontOffset + _FontNumChars + 1);
+		printf("ERM19264_graphics::writeChar Error 3: Character out of Font bounds  %c : %u<->%u \r\n", value, _FontOffset, _FontOffset + _FontNumChars);
 		return 3;
 	}
 	if (_Font_Y_Size % 8 == 0) // Is the font height divisible by 8

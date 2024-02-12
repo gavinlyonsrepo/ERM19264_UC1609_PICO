@@ -6,7 +6,7 @@
 	@test
 		-# Test 501 All Pixels on
 		-# Test 502 Invert screen color
-		-# Test 503 Rotate screen command
+		-# Test 503 flip screen command
 		-# Test 504 rotate screen buffer
 		-# Test 505 Scroll Screen
 		-# Test 506 Enable and disable screen
@@ -120,19 +120,13 @@ void DisplayMiscTests()
 	busy_wait_ms(4000);
 	myLCD.LCDInvertDisplay(0);
 
-	// Test 503 LCD rotate command
+	// Test 503 LCD flip command
 	myLCD.LCDclearBuffer();
 	myLCD.setCursor(5, 30);
-	myLCD.print("rotate Cmd test");
+	myLCD.print("flip Cmd test");
 	myLCD.LCDupdate();
 	busy_wait_ms(2000);
 	myLCD.LCDsetRotateCmd(UC1609_ROTATION_FLIP_ONE);
-	myLCD.LCDupdate();
-	busy_wait_ms(5000);
-	myLCD.LCDsetRotateCmd(UC1609_ROTATION_FLIP_TWO);
-	myLCD.LCDupdate();
-	busy_wait_ms(5000);
-	myLCD.LCDsetRotateCmd(UC1609_ROTATION_FLIP_THREE);
 	myLCD.LCDupdate();
 	busy_wait_ms(5000);
 	myLCD.LCDsetRotateCmd(UC1609_ROTATION_NORMAL);
@@ -147,9 +141,11 @@ void DisplayMiscTests()
 	busy_wait_ms(2000);
 	myLCD.LCDclearBuffer();
 
-	myLCD.setCursor(5, 5);
 	myLCD.setRotation(LCD_Degrees_0);
+	myLCD.setCursor(5, 5);
 	myLCD.print("rotate 0");
+	myLCD.setCursor(5,50);
+	myLCD.print("bottom");
 	myLCD.LCDupdate();
 	busy_wait_ms(5000);
 	myLCD.LCDclearBuffer();
@@ -157,6 +153,8 @@ void DisplayMiscTests()
 	myLCD.setRotation(LCD_Degrees_90);
 	myLCD.setCursor(5, 5);
 	myLCD.print("rotate 90");
+	myLCD.setCursor(5,180);
+	myLCD.print("bottom");
 	myLCD.LCDupdate();
 	busy_wait_ms(5000);
 	myLCD.LCDclearBuffer();
@@ -164,13 +162,17 @@ void DisplayMiscTests()
 	myLCD.setRotation(LCD_Degrees_180);
 	myLCD.setCursor(5, 5);
 	myLCD.print("rotate 180");
+	myLCD.setCursor(5,50);
+	myLCD.print("bottom");
 	myLCD.LCDupdate();
 	busy_wait_ms(5000);
 	myLCD.LCDclearBuffer();
 
 	myLCD.setRotation(LCD_Degrees_270);
 	myLCD.setCursor(5, 5);
-	myLCD.print("rotate  270");
+	myLCD.print("rotate    270");
+	myLCD.setCursor(5,180);
+	myLCD.print("bottom");
 	myLCD.LCDupdate();
 	busy_wait_ms(5000);
 	myLCD.setRotation(LCD_Degrees_0); //back to normal rotation

@@ -127,10 +127,8 @@ private:
 
 	int16_t _LCD_WIDTH = 192;				  /**< Width of LCD Screen in pixels */
 	int16_t _LCD_HEIGHT = 64;				  /**< Height of LCD Screen in pixels */
-	uint8_t _bufferWidth = 192;				  /**< Width of Screen Buffer */
-	uint8_t _bufferHeight = 64;				  /**< Height of Screen Buffer */
 	int8_t _LCD_PAGE_NUM = (_LCD_HEIGHT / 8); /**< Number of byte size pages LCD screen is divided into */
 	uint8_t *_LCDbuffer = nullptr;			  /**< Pointer to screen buffer data*/
 
-	const uint16_t _LCDLibVerNum = 180; /**< Library version number 180 = 1.8.0*/
+	const uint16_t _LCDLibVerNum = 181; /**< Library version number 180 = 1.8.0*/
 };
