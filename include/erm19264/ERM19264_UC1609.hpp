@@ -8,7 +8,7 @@
 #pragma once
 
 // ** INCLUDES **
-#include "erm19264/ERM19264_UC1609_graphics.hpp"
+#include "ERM19264_UC1609_graphics.hpp"
 #include "hardware/spi.h"
 #include "pico/stdlib.h"
 

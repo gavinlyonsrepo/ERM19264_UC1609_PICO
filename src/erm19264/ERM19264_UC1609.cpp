@@ -5,7 +5,7 @@
 	@details Project Name: ERM19264_UC1609_PICO <https://github.com/gavinlyonsrepo/ERM19264_UC1609_PICO>
 */
 
-#include "../include/erm19264/ERM19264_UC1609.hpp"
+#include "../../include/erm19264/ERM19264_UC1609.hpp"
 
 /*!
 	@brief init the LCD class object

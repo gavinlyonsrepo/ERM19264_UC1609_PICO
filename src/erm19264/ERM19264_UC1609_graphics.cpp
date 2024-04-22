@@ -5,8 +5,8 @@
 	@author  Gavin Lyons
 */
 
-#include "../include/erm19264/ERM19264_UC1609_graphics.hpp"
-#include "../include/erm19264/ERM19264_UC1609.hpp"
+#include "../../include/erm19264/ERM19264_UC1609_graphics.hpp"
+#include "../../include/erm19264/ERM19264_UC1609.hpp"
 
 // === Font class implementation ===
 

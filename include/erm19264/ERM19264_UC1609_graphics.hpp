@@ -9,8 +9,8 @@
 
 #include <cmath> // for abs function
 #include <cstdio>
-#include "erm19264/ERM19264_UC1609_Print.hpp"
-#include "erm19264/ERM19264_UC1609_font.hpp"
+#include "ERM19264_UC1609_Print.hpp"
+#include "ERM19264_UC1609_font.hpp"
 
 #define LCDUC1609swap(a, b) \
 	{                        \

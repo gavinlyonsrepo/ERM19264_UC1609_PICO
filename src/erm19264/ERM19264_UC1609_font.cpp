@@ -6,7 +6,7 @@
  * @details <https://github.com/gavinlyonsrepo/ERM19264_UC1609_PICO>
  */
 
-#include "../include/erm19264/ERM19264_UC1609_font.hpp"
+#include "../../include/erm19264/ERM19264_UC1609_font.hpp"
 
 /*!
     Standard ASCII 6x8 font
