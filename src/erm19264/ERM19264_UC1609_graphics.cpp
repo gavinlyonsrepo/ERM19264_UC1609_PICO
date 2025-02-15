@@ -453,13 +453,13 @@ void ERM19264_graphics::fillTriangle(int16_t x0, int16_t y0,
 	@brief Draw a 1-bit color bitmap
 	@param x x co-ord position
 	@param y y co-ord posiiton a
-	@param bitmap pointer to bitmap data
+	@param bitmap span  to bitmap data
 	@param w width of the bitmap
 	@param h height of the bitmap
 	@param color foreground colour
 	@param bg background colour.
 	@return Will return 0x00 for success, non-zero for failure
-		Failure could be  out of bounds , wrong size , invalid pointer object.
+		Failure could be  out of bounds , wrong size , invalid empty span object.
 	@note Variable drawBitmapAddr controls data addressing
 		-# drawBitmapAddr  = true Vertical  data addressing
 		-# drawBitmapAddr  = false Horizontal data addressing
@@ -648,8 +648,8 @@ void ERM19264_graphics::setDrawBitmapAddr(bool mode)
 
 /*!
 	@brief Write 1 character on LCD.
-	@param  x character starting position on x-axis. Valid values: 0..127
-	@param  y character starting position on x-axis. Valid values: 0..63
+	@param  x character starting position on x-axis.
+	@param  y character starting position on x-axis.
 	@param  value Character to be written.
 	@return Will return
 		-# Success

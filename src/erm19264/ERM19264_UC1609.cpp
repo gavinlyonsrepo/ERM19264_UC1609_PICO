@@ -165,7 +165,7 @@ void ERM19264::LCDscroll(uint8_t bits)
 /*!
 	@brief Rotates the display using LCD built-in rotate commands
 	@details Set LC[2:1] for COM (row) mirror (MY), SEG (column) mirror (MX).
-		Param1: 4 possible values 000 010 100 110 (defined)
+	@param rotatevalue enum 4 possible values 000 010 100 110 (defined)
 	@note If Mx is changed the buffer must BE updated see examples. 
 		This rotates the display based on LCD commands. It is also 
 		possible to rotate software buffer using setRotation method
@@ -257,7 +257,7 @@ void ERM19264::LCDFillPage(uint8_t dataPattern = 0)
 	 @param y offset 0-64
 	 @param w width 0-192
 	 @param h height 0-64
-	 @param data  pointer to the bitmap  data
+	 @param data  span to the bitmap data
 	 @note No buffer used. Data drawn onto screen directly
 */
 void ERM19264::LCDBitmap(int16_t x, int16_t y, uint8_t w, uint8_t h, std::span<const uint8_t>  data)
@@ -304,6 +304,9 @@ void ERM19264::SendData(uint8_t data)
 /*!
 	 @brief updates the LCD  i.e. writes the  shared buffer to the active screen
 		pointed to by ActiveBuffer
+	@return 
+		-# Success 
+		-# BufferEmpty if buffer is empty object
 */
 DisplayRet::Ret_Codes_e ERM19264::LCDupdate()
 {
@@ -321,7 +324,10 @@ DisplayRet::Ret_Codes_e ERM19264::LCDupdate()
 }
 
 /*!
-	 @brief clears the buffer of the active screen pointed to by ActiveBuffer 
+	@brief clears the buffer of the active screen pointed to by ActiveBuffer 
+	@return 
+		-# Success 
+		-# BufferEmpty if buffer is empty object
 	 @note Does NOT write to the screen
 */
 DisplayRet::Ret_Codes_e ERM19264::LCDclearBuffer()
@@ -342,7 +348,7 @@ DisplayRet::Ret_Codes_e ERM19264::LCDclearBuffer()
 	 @param y offset 0-64
 	 @param w width 0-192
 	 @param h height 0-64
-	 @param data pointer to the data array
+	 @param data span to the buffer  array
 	 @note Called by LCDupdate internally to write buffer to screen , can be called standalone 	as well
 */
 void ERM19264::LCDBuffer(int16_t x, int16_t y, uint8_t w, uint8_t h, std::span<uint8_t> data)
@@ -429,7 +435,6 @@ void ERM19264::drawPixel(int16_t x, int16_t y, uint8_t colour)
 	@param width width of buffer in pixels
 	@param height height of buffer in pixels
 	@param pBuffer the buffer array which decays to pointer
-	@param sizeOfBuffer size of buffer
 	@return Will return:
 		-# 0. Success
 		-# 2. Buffer size calculations are incorrect BufferSize = w * (h/8),
