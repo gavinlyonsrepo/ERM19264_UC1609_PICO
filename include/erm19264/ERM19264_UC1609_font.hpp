@@ -17,16 +17,42 @@
 
 #pragma once
 
-#include <cstdint>
+#include "ERM19264_UC1609_data.hpp"
+#include <cstdio>
+#include <array>
+#include <span>
 
-// Font data is in the cpp file accessed thru extern pointers.
-extern const uint8_t *pFontDefault;	   /**< pFontDefault  6 by 8 */
-extern const uint8_t *pFontWide;	   /**< pFontWide  9 by 8 (NO LOWERCASE) */
-extern const uint8_t *pFontPico;	   /**< pFontpico 3 by 6 */
-extern const uint8_t *pFontSinclairS;  /**< pFontSinclairS 8 by 8 */
-extern const uint8_t *pFontMega;	   /**< pFontMega  Mega 16 by 16 */
-extern const uint8_t *pFontArialBold;  /**< pFontArialBold 16 by 16 */
-extern const uint8_t *pFontHallfetica; /**< pFontHallfetica 16 by 16*/
-extern const uint8_t *pFontArialRound; /**< pFontArialRound 16 by 24 */
-extern const uint8_t *pFontGroTesk;	   /**< pFontGroTesk 16 by 32 */
-extern const uint8_t *pFontSixteenSeg; /**< pFontSixteenSeg 32 by 48 (NUMBERS ONLY + : . -)a */
+// Font data is stored in std::array in font.cpp
+extern const std::span<const uint8_t> pFontDefault;
+extern const std::span<const uint8_t> pFontWide;
+extern const std::span<const uint8_t> pFontPico;
+extern const std::span<const uint8_t> pFontSinclairS;
+extern const std::span<const uint8_t> pFontMega;
+extern const std::span<const uint8_t> pFontArialBold;
+extern const std::span<const uint8_t> pFontHallfetica;
+extern const std::span<const uint8_t> pFontArialRound;
+extern const std::span<const uint8_t> pFontGroTesk;
+extern const std::span<const uint8_t> pFontSixteenSeg;
+
+/*! @brief Font class to hold font data object  */
+class ERM19264_LCDFonts
+{
+	public:
+		
+		ERM19264_LCDFonts();
+		~ERM19264_LCDFonts() = default;
+
+		DisplayRet::Ret_Codes_e setFont(std::span<const uint8_t> font);
+		void setInvertFont(bool invertStatus);
+		bool getInvertFont(void);
+
+		std::span<const uint8_t> _FontSelect = pFontDefault; /**< Active font */ /**< Pointer to the active font,  Fonts Stored are Const */
+
+	protected:
+		uint8_t _Font_X_Size = 0x06; /**< Width Size of a Font character */
+		uint8_t _Font_Y_Size = 0x08; /**< Height Size of a Font character */
+		uint8_t _FontOffset = 0x00; /**< Offset in the ASCII table 0x00 to 0xFF, where font begins */
+		uint8_t _FontNumChars = 0xFE; /**< Number of characters in font 0x00 to 0xFE */
+	private:
+		bool _FontInverted = false; /**< Is the font inverted , False = normal , true = inverted*/
+};

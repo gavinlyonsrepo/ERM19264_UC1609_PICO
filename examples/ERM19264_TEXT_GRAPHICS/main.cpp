@@ -20,7 +20,7 @@
 		-# Test 713 println + print & textwrap
 		-# Test 714 print method String object
 		-# Test 715 print method numbers
-		-# Test 801 Graphics functions
+		-# Test 901 Graphics functions
 */
 
 // === Libraries ===
@@ -48,7 +48,7 @@ uint32_t mySPIBaudRate = 8000;
 spi_inst_t *mySpiInst = spi0;
 
 // instantiate  an LCD object
-ERM19264_UC1609 myLCD(myLCDwidth, myLCDheight);
+ERM19264 myLCD(myLCDwidth, myLCDheight);
 
 // Test timing parameters
 #define DisplayDelay4 4000
@@ -75,7 +75,7 @@ void Test713(void);
 void Test714(void);
 void Test715(void);
 
-void Test801(void);
+void Test901(void);
 
 // === Main ===
 int main()
@@ -98,7 +98,7 @@ int main()
 	Test714();
 	Test715();
 
-	Test801();
+	Test901();
 
 	EndTest();
 }
@@ -113,13 +113,10 @@ void SetupTest()
 	printf("LCD ERM19264:: Start!\r\n");
 	myLCD.LCDSPISetup(mySpiInst, mySPIBaudRate, dc_pin, res_pin, cs_pin, sck_pin, mosi_pin);
 	myLCD.LCDinit(LCDcontrast, LCDRAMADDRCTRL);
-	if (myLCD.LCDSetBufferPtr(myLCDwidth, myLCDheight, screenBuffer, sizeof(screenBuffer)) != 0)
+	if (myLCD.LCDSetBufferPtr(myLCDwidth, myLCDheight, screenBuffer) != DisplayRet::Success)
 	{
 		printf("SetupTest : ERROR : LCDSetBufferPtr Failed!\r\n");
-		while (1)
-		{
-			busy_wait_ms(1000);
-		}
+		while (1){busy_wait_ms(1000);}
 	}							  // Initialize the buffer
 	myLCD.LCDFillScreen(0xF0, 0); // splash screen bars
 	busy_wait_ms(1000);
@@ -343,13 +340,13 @@ void Test712(void)
 	printf("LCD Test 712 Base number systems using print \r\n");
 	myLCD.setFont(pFontDefault);
 	myLCD.setCursor(0, 0);
-	myLCD.print(47, DEC);
+	myLCD.print(47, ERM19264::DEC);
 	myLCD.setCursor(0, 16);
-	myLCD.print(47, HEX);
+	myLCD.print(47, ERM19264::HEX);
 	myLCD.setCursor(0, 32);
-	myLCD.print(47, BIN);
+	myLCD.print(47, ERM19264::BIN);
 	myLCD.setCursor(0, 48);
-	myLCD.print(47, OCT);
+	myLCD.print(47, ERM19264::OCT);
 	TestReset();
 }
 
@@ -408,12 +405,12 @@ void TestReset(void)
 	myLCD.LCDclearBuffer();
 }
 // Test 801 Function to display Graphics.
-void Test801()
+void Test901()
 {
 	// Q1 ||  Q2
 	//---------
 	// Q3 ||  Q4
-	printf("LCD Test 801 Graphic functions test \r\n");
+	printf("LCD Test 901 Graphic functions test \r\n");
 	bool colour = 1;
 	uint8_t count = 50;
 
@@ -423,18 +420,18 @@ void Test801()
 		colour = !colour;
 
 		// Draw the X
-		myLCD.drawLine(96, 0, 96, 64, FG_COLOR);
-		myLCD.drawFastVLine(94, 0, 64, FG_COLOR);
-		myLCD.drawFastHLine(0, 32, 192, FG_COLOR);
+		myLCD.drawLine(96, 0, 96, 64, ERM19264::FG_COLOR);
+		myLCD.drawFastVLine(94, 0, 64, ERM19264::FG_COLOR);
+		myLCD.drawFastHLine(0, 32, 192, ERM19264::FG_COLOR);
 
 		// Q1
 		myLCD.fillRect(0, 10, 20, 20, colour);
-		myLCD.fillCircle(40, 20, 10, FG_COLOR);
+		myLCD.fillCircle(40, 20, 10, ERM19264::FG_COLOR);
 		myLCD.fillTriangle(60, 30, 70, 10, 80, 30, !colour);
 		// Q2
-		myLCD.drawRect(100, 10, 20, 20, FG_COLOR);
+		myLCD.drawRect(100, 10, 20, 20, ERM19264::FG_COLOR);
 		myLCD.drawCircle(140, 20, 10, colour);
-		myLCD.drawTriangle(160, 30, 170, 10, 180, 30, FG_COLOR);
+		myLCD.drawTriangle(160, 30, 170, 10, 180, 30, ERM19264::FG_COLOR);
 		// Q3
 		myLCD.fillRoundRect(0, 40, 40, 20, 10, !colour);
 		myLCD.drawRoundRect(45, 40, 40, 20, 10, colour);
@@ -442,7 +439,7 @@ void Test801()
 		char i;
 		for (i = 0; i < 10; i++)
 		{
-			myLCD.drawRect(100 + i, 40 + i, 80 - i * 2, 20 - i * 2, FG_COLOR);
+			myLCD.drawRect(100 + i, 40 + i, 80 - i * 2, 20 - i * 2, ERM19264::FG_COLOR);
 			myLCD.LCDupdate();
 			busy_wait_ms(50);
 		}

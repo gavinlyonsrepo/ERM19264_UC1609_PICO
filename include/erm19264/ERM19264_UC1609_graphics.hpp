@@ -12,46 +12,6 @@
 #include "ERM19264_UC1609_Print.hpp"
 #include "ERM19264_UC1609_font.hpp"
 
-#define LCDUC1609swap(a, b) \
-	{                        \
-		int16_t t = a;       \
-		a = b;               \
-		b = t;               \
-	}
-
-
-
-/*! LCD rotate modes in degrees*/
-enum  LCD_rotate_e : uint8_t
-{
-	LCD_Degrees_0 = 0, /**< No rotation 0 degrees*/
-	LCD_Degrees_90,    /**< Rotation 90 degrees*/
-	LCD_Degrees_180,   /**< Rotation 180 degrees*/
-	LCD_Degrees_270   /**< Rotation 270 degrees*/
-};
-
-/*! @brief Font class to hold font data object  */
-class ERM19264_LCDFonts
-{
-public:
-	ERM19264_LCDFonts();
-	~ERM19264_LCDFonts(){};
-
-	uint8_t setFont(const uint8_t *font);
-	void setInvertFont(bool invertStatus);
-	bool getInvertFont(void);
-
-	const uint8_t *_FontSelect = pFontDefault; /**< Pointer to the active font,  Fonts Stored are Const */
-
-protected:
-	uint8_t _Font_X_Size = 0x06;  /**< Width Size of a Font character */
-	uint8_t _Font_Y_Size = 0x08;  /**< Height Size of a Font character */
-	uint8_t _FontOffset = 0x00;	  /**< Offset in the ASCII table 0x00 to 0xFF, where font begins */
-	uint8_t _FontNumChars = 0xFE; /**< Number of characters in font 0x00 to 0xFE */
-private:
-	bool _FontInverted = false; /**< Is the font inverted , False = normal , true = inverted*/
-};
-
 /*! @brief Graphics class to hold graphic related functions */
 class ERM19264_graphics : public ERM19264_LCDFonts, public Print
 {
@@ -59,9 +19,18 @@ class ERM19264_graphics : public ERM19264_LCDFonts, public Print
 public:
 	ERM19264_graphics(int16_t w, int16_t h); // Constructor
 
+	/*! Enum to hold current screen rotation in degrees bi color display  */
+	enum LCD_rotate_e : uint8_t
+	{
+		LCD_Degrees_0 =   0,    /**< display screen rotated 0 degrees */
+		LCD_Degrees_90 =  1,    /**< display screen rotated 90 degrees  */
+		LCD_Degrees_180 = 2,    /**< display screen rotated 180 degrees  */
+		LCD_Degrees_270 = 3     /**< display screen rotated 270 degrees */
+	};
+
 	virtual size_t write(uint8_t);
-	uint8_t writeChar(int16_t x, int16_t y, char value);
-	uint8_t writeCharString(int16_t x, int16_t y, char *text);
+	DisplayRet::Ret_Codes_e writeChar(int16_t x, int16_t y, char value);
+	DisplayRet::Ret_Codes_e writeCharString(int16_t x, int16_t y, char *text);
 	virtual void drawPixel(int16_t x, int16_t y, uint8_t color) = 0;
 	void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color);
 	void drawFastVLine(int16_t x, int16_t y, int16_t h, uint8_t color);
@@ -86,8 +55,8 @@ public:
 					   int16_t radius, uint8_t color);
 
 	void setDrawBitmapAddr(bool mode);
-	uint8_t drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
-					   int16_t w, int16_t h, uint8_t color, uint8_t bg, uint16_t sizeOfBitmap);
+	uint8_t drawBitmap(int16_t x, int16_t y, std::span<const uint8_t> bitmap,
+					   int16_t w, int16_t h, uint8_t color, uint8_t bg);
 
 	void setCursor(int16_t x, int16_t y);
 	void setTextWrap(bool w);
@@ -109,4 +78,17 @@ protected:
 	bool _textwrap;		  /**< If set, 'wrap' text at right edge of display*/
 	bool _drawBitmapAddr; /**< data addressing mode for method drawBitmap, True-vertical , false-horizontal */
 	LCD_rotate_e LCD_rotate = LCD_Degrees_0; /**< Enum to hold rotation */
+
+	private:
+	/*!
+		@brief Swaps the values of two int16_t variables.
+		@param a Reference to the first integer.
+		@param b Reference to the second integer.
+		@note This function swaps the values in place without using additional memory.
+	*/
+	inline void LCDUC1609swap(int16_t& a, int16_t& b) {
+		int16_t t = a;
+		a = b;
+		b = t;
+	}
 };

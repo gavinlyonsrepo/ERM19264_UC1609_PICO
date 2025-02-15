@@ -44,7 +44,7 @@ uint32_t mySPIBaudRate = 8000;
 spi_inst_t *mySpiInst = spi0;
 
 // instantiate  an LCD object
-ERM19264_UC1609 myLCD(myLCDwidth, myLCDheight);
+ERM19264 myLCD(myLCDwidth, myLCDheight);
 
 
 // === Function prototypes ===
@@ -73,7 +73,7 @@ void SetupTest()
 	printf("LCD ERM19264:: Start!\r\n");
 	myLCD.LCDSPISetup(mySpiInst, mySPIBaudRate, dc_pin, res_pin, cs_pin, sck_pin, mosi_pin);
 	myLCD.LCDinit(LCDcontrast, LCDRAMADDRCTRL);
-	if (myLCD.LCDSetBufferPtr(myLCDwidth, myLCDheight, screenBuffer, sizeof(screenBuffer)) != 0)
+	if (myLCD.LCDSetBufferPtr(myLCDwidth, myLCDheight, screenBuffer) != DisplayRet::Success)
 	{
 		printf("SetupTest : ERROR : LCDSetBufferPtr Failed!\r\n");
 		while (1)
@@ -126,10 +126,10 @@ void DisplayMiscTests()
 	myLCD.print("flip Cmd test");
 	myLCD.LCDupdate();
 	busy_wait_ms(2000);
-	myLCD.LCDsetRotateCmd(UC1609_ROTATION_FLIP_ONE);
+	myLCD.LCDsetRotateCmd(ERM19264::ROTATION_FLIP_ONE);
 	myLCD.LCDupdate();
 	busy_wait_ms(5000);
-	myLCD.LCDsetRotateCmd(UC1609_ROTATION_NORMAL);
+	myLCD.LCDsetRotateCmd(ERM19264::ROTATION_NORMAL);
 	myLCD.LCDupdate();
 	busy_wait_ms(5000);
 
@@ -141,7 +141,7 @@ void DisplayMiscTests()
 	busy_wait_ms(2000);
 	myLCD.LCDclearBuffer();
 
-	myLCD.setRotation(LCD_Degrees_0);
+	myLCD.setRotation(ERM19264::LCD_Degrees_0);
 	myLCD.setCursor(5, 5);
 	myLCD.print("rotate 0");
 	myLCD.setCursor(5,50);
@@ -150,7 +150,7 @@ void DisplayMiscTests()
 	busy_wait_ms(5000);
 	myLCD.LCDclearBuffer();
 
-	myLCD.setRotation(LCD_Degrees_90);
+	myLCD.setRotation(ERM19264::LCD_Degrees_90);
 	myLCD.setCursor(5, 5);
 	myLCD.print("rotate 90");
 	myLCD.setCursor(5,180);
@@ -159,7 +159,7 @@ void DisplayMiscTests()
 	busy_wait_ms(5000);
 	myLCD.LCDclearBuffer();
 
-	myLCD.setRotation(LCD_Degrees_180);
+	myLCD.setRotation(ERM19264::LCD_Degrees_180);
 	myLCD.setCursor(5, 5);
 	myLCD.print("rotate 180");
 	myLCD.setCursor(5,50);
@@ -168,14 +168,14 @@ void DisplayMiscTests()
 	busy_wait_ms(5000);
 	myLCD.LCDclearBuffer();
 
-	myLCD.setRotation(LCD_Degrees_270);
+	myLCD.setRotation(ERM19264::LCD_Degrees_270);
 	myLCD.setCursor(5, 5);
 	myLCD.print("rotate    270");
 	myLCD.setCursor(5,180);
 	myLCD.print("bottom");
 	myLCD.LCDupdate();
 	busy_wait_ms(5000);
-	myLCD.setRotation(LCD_Degrees_0); //back to normal rotation
+	myLCD.setRotation(ERM19264::LCD_Degrees_0); //back to normal rotation
 	myLCD.LCDclearBuffer();
 
 	// Test 505 LCD scroll
@@ -244,10 +244,10 @@ void DisplayFPS()
 		myLCD.setCursor(0, 50);
 		myLCD.print(myLCD.GetLibVerNum()); 
 
-		myLCD.drawFastVLine(96, 0, 63, FG_COLOR);
+		myLCD.drawFastVLine(96, 0, 63, ERM19264::FG_COLOR);
 		myLCD.fillRect(100, 10, 20, 20, colour);
 		myLCD.fillCircle(130, 20, 10, !colour);
-		myLCD.drawRoundRect(110, 40, 40, 20, 10, FG_COLOR);
+		myLCD.drawRoundRect(110, 40, 40, 20, 10, ERM19264::FG_COLOR);
 		myLCD.LCDupdate();
 	}
 }

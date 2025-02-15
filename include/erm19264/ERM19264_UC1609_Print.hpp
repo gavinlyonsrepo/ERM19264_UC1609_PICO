@@ -9,67 +9,79 @@
 #include <cstdint>
 #include <cstdio> // for size_t
 #include <cstring>
-#include <string>
 #include <cstdlib>
 #include <cmath>
+#include <string>
+#include <array>
+#include "ERM19264_UC1609_data.hpp"
 
-#define DEC 10
-#define HEX 16
-#define OCT 8
-#ifdef BIN // Prevent warnings if BIN is previously defined in "iotnx4.h" or similar
-#undef BIN
-#endif
-#define BIN 2
-
+/*!
+	@brief class that provides polymorphic print methods for printing data
+*/
 class Print
 {
-private:
-  int write_error;
-  size_t printNumber(unsigned long, uint8_t);
-  size_t printFloat(double, uint8_t);
+	private:
+		int write_error;
+		size_t printNumber(unsigned long, uint8_t);
+		size_t printFloat(double, uint8_t);
+	protected:
+		void setWriteError(int err = 1) { write_error = err; }
+	public:
+		/*! Base number type */
+		enum BaseNum : uint8_t{
+			DEC = 10,   /**< Decimal*/
+			HEX = 16,    /**< Hexadecimal */
+			OCT = 8,    /**< Octal */
+			BIN = 2      /**<  Binary */
+		};
 
-protected:
-  void setWriteError(int err = 1) { write_error = err; }
+		Print() : write_error(0) {}
 
-public:
-  Print() : write_error(0) {}
+		/*!
+			@brief  gets the error flag status, zero no error
+		*/
+		int getWriteError() { return write_error; }
+		/*! 
+			@brief clears the errof flag by setting it to zero
+		*/
+		void clearWriteError() { setWriteError(0); }
+		/*! 
+			@brief writes a character to display , defined in the sub class
+		*/
+		virtual size_t write(uint8_t) = 0;
+		size_t write(const char *str) {
+			if (str == nullptr) 
+			{
+				setWriteError(DisplayRet::CharArrayNullptr); //_CharArrayNullptr
+				return 0;
+			}
+			return write((const uint8_t *)str, strlen(str));
+		}
+		virtual size_t write(const uint8_t *buffer, size_t size);
+		size_t write(const char *buffer, size_t size) {
+			return write((const uint8_t *)buffer, size);
+		}
 
-  int getWriteError() { return write_error; }
-  void clearWriteError() { setWriteError(0); }
+		// default to zero, meaning "a single write may block"
+		// should be overriden by subclasses with buffering
+		virtual int availableForWrite() { return 0; }
 
-  virtual size_t write(uint8_t) = 0;
-  size_t write(const char *str)
-  {
-    if (str == NULL)
-      return 0;
-    return write((const uint8_t *)str, strlen(str));
-  }
-  virtual size_t write(const uint8_t *buffer, size_t size);
-  size_t write(const char *buffer, size_t size)
-  {
-    return write((const uint8_t *)buffer, size);
-  }
+		size_t print(const char[]);
+		size_t print(char);
+		size_t print(int, int = DEC);
+		size_t print(unsigned int, int = DEC);
+		size_t print(long, int = DEC);
+		size_t print(unsigned long, int = DEC);
+		size_t print(double, int = 2);
+		size_t print(const std::string &);
 
-  // default to zero, meaning "a single write may block"
-  // should be overriden by subclasses with buffering
-  virtual int availableForWrite() { return 0; }
-
-  size_t print(const char[]);
-  size_t print(char);
-  size_t print(int, int = DEC);
-  size_t print(unsigned int, int = DEC);
-  size_t print(long, int = DEC);
-  size_t print(unsigned long, int = DEC);
-  size_t print(double, int = 2);
-  size_t print(const std::string &);
-
-  size_t println(const char[]);
-  size_t println(char);
-  size_t println(int, int = DEC);
-  size_t println(unsigned int, int = DEC);
-  size_t println(long, int = DEC);
-  size_t println(unsigned long, int = DEC);
-  size_t println(double, int = 2);
-  size_t println(void);
-  size_t println(const std::string &s);
+		size_t println(const char[]);
+		size_t println(char);
+		size_t println(int, int = DEC);
+		size_t println(unsigned int, int = DEC);
+		size_t println(long, int = DEC);
+		size_t println(unsigned long, int = DEC);
+		size_t println(double, int = 2);
+		size_t println(void);
+		size_t println(const std::string &s);
 };

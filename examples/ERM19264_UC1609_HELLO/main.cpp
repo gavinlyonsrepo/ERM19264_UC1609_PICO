@@ -31,7 +31,7 @@ uint32_t mySPIBaudRate = 8000;
 spi_inst_t *mySpiInst = spi0;
 
 // instantiate  an LCD object
-ERM19264_UC1609 myLCD(myLCDwidth, myLCDheight);
+ERM19264 myLCD(myLCDwidth, myLCDheight);
 
 // =============== Function prototype ================
 void SetupTest(void);
@@ -55,7 +55,7 @@ void SetupTest()
 	printf("LCD :: Start!\r\n");
 	myLCD.LCDSPISetup(mySpiInst, mySPIBaudRate, dc_pin, res_pin, cs_pin, sck_pin, mosi_pin);
 	myLCD.LCDinit(LCDcontrast, LCDRAMADDRCTRL);
-	if (myLCD.LCDSetBufferPtr(myLCDwidth, myLCDheight, screenBuffer, sizeof(screenBuffer)) != 0)
+	if (myLCD.LCDSetBufferPtr(myLCDwidth, myLCDheight, screenBuffer) != DisplayRet::Success)
 	{
 		printf("SetupTest : ERROR : LCDSetBufferPtr Failed!\r\n");
 		while (1)

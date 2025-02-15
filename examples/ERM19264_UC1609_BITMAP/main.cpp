@@ -1,7 +1,7 @@
 /*!
 	@file main.cpp
 	@author Gavin Lyons
-	@brief Test file for ERM19264_UC1609_PICO  library,showing how to use  bitmap
+	@brief Test file for ERM19264_UC1609_PICO  library,showing how to draw bitmap
 	@test
 		-# Test 301 Buffer init  test : Bitmap Vertical addressed,
 				can be used when initialising Buffer. Buffer is defined with bitmap data in it.
@@ -38,7 +38,7 @@ uint32_t mySPIBaudRate = 8000;
 spi_inst_t *mySpiInst = spi0;
 
 // instantiate  an LCD object
-ERM19264_UC1609 myLCD(myLCDwidth, myLCDheight);
+ERM19264 myLCD(myLCDwidth, myLCDheight);
 
 // 192x64px 192 * 64/8 = 1536 fullscreen bitmap. data Vertical addressed
 uint8_t screenBuffer[myScreenSize] = {
@@ -171,10 +171,10 @@ void SetupTest()
 {
 	stdio_init_all(); // Initialize chosen serial port, default 38400 baud
 	busy_wait_ms(750);
-	printf("LCD ERM19264:: Start!\r\n");
+	printf("LCD ERM19264::Bitmap test :: Start!\r\n");
 	myLCD.LCDSPISetup(mySpiInst, mySPIBaudRate, dc_pin, res_pin, cs_pin, sck_pin, mosi_pin);
 	myLCD.LCDinit(LCDcontrast, LCDRAMADDRCTRL);
-	if (myLCD.LCDSetBufferPtr(myLCDwidth, myLCDheight, screenBuffer, sizeof(screenBuffer)) != 0)
+	if (myLCD.LCDSetBufferPtr(myLCDwidth, myLCDheight, screenBuffer) != DisplayRet::Success)
 	{
 		printf("SetupTest : ERROR : LCDSetBufferPtr Failed!\r\n");
 		while (1)
@@ -207,7 +207,7 @@ void Test301(void)
 void Test302(void)
 {
 	// 'image2 'lighting symbols', 84x24px  data vertical addressed
-	const uint8_t lightingImage[252] = {
+	const  std::array<uint8_t, 252> lightingImage= {
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 		0x7f, 0x7f, 0x3f, 0x3f, 0x1f, 0x0f, 0x0f, 0x07, 0x87, 0xc3, 0xe3, 0xf9, 0xfd, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -225,7 +225,7 @@ void Test302(void)
 		0x9f, 0xc7, 0xc3, 0xe1, 0xe0, 0xf0, 0xf0, 0xf8, 0xfc, 0xfc, 0xfe, 0xfe, 0xff, 0xff, 0xff, 0xff,
 		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
-	myLCD.LCDBitmap(5, 5, 84, 24, lightingImage); // no buffer
+	myLCD.LCDBitmap(5, 5, 84, 24, lightingImage); // no buffer LCDBitmap draws directly to screen
 	busy_wait_ms(5000);
 	myLCD.LCDFillScreen(0x00, 0); // Clears screen, no buffer
 	busy_wait_ms(1000);
@@ -234,16 +234,15 @@ void Test302(void)
 // test (303) Draw a vertically addressed bitmap to screen with drawBitmap method
 void Test303(void)
 {
-
 	// temperature Sun image, 16x16px , vertical addressed  test 303
-	const uint8_t TemperatureImageVa[32] = {
+	const std::array<uint8_t, 32> TemperatureImageVa = {
 		0xff, 0xdf, 0xdf, 0xff, 0x1f, 0x09, 0x0f, 0x07, 0x07, 0x0f, 0x09, 0x1f, 0xff, 0xdf, 0xdf, 0xff,
 		0xff, 0xfb, 0xfb, 0xff, 0xf8, 0x90, 0xf0, 0xe0, 0xe0, 0xf0, 0x90, 0xf8, 0xff, 0xfb, 0xfb, 0xff};
 
 	myLCD.LCDclearBuffer();
 	myLCD.setDrawBitmapAddr(true); // for Bitmap Data Vertical  addressed
-	myLCD.drawBitmap(0, 0, TemperatureImageVa, 16, 16, FG_COLOR, BG_COLOR, sizeof(TemperatureImageVa));
-	myLCD.drawBitmap(30, 20, TemperatureImageVa, 16, 16, BG_COLOR, FG_COLOR, sizeof(TemperatureImageVa));
+	myLCD.drawBitmap(0, 0, TemperatureImageVa, 16, 16, ERM19264::FG_COLOR, ERM19264::BG_COLOR);
+	myLCD.drawBitmap(30, 20, TemperatureImageVa, 16, 16, ERM19264::BG_COLOR, ERM19264::FG_COLOR);
 	myLCD.LCDupdate();
 	busy_wait_ms(10000);
 }
@@ -253,7 +252,7 @@ void Test304(void)
 {
 
 	// SUN In text 40x16 horizontally addressed
-	const uint8_t SunTextImage[80] = {
+	const  std::array<uint8_t, 80> SunTextImage = {
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3F, 0xF1, 0x81, 0x8F, 0xFC, 0x3F,
 		0xF1, 0x81, 0x8F, 0xFC, 0x30, 0x31, 0x81, 0x8C, 0x0C, 0x30, 0x01, 0x81, 0x8C, 0x0C, 0x30, 0x01,
 		0x81, 0x8C, 0x0C, 0x3F, 0xF1, 0x81, 0x8C, 0x0C, 0x3F, 0xF1, 0x81, 0x8C, 0x0C, 0x00, 0x31, 0x81,
@@ -262,8 +261,8 @@ void Test304(void)
 
 	myLCD.LCDclearBuffer();			// Clear active buffer
 	myLCD.setDrawBitmapAddr(false); // for Bitmap Data Horizontal addressed
-	myLCD.drawBitmap(40, 10, SunTextImage, 40, 16, FG_COLOR, BG_COLOR, sizeof(SunTextImage));
-	myLCD.drawBitmap(100, 20, SunTextImage, 40, 16, BG_COLOR, FG_COLOR, sizeof(SunTextImage));
+	myLCD.drawBitmap(40, 10, SunTextImage, 40, 16, ERM19264::FG_COLOR, ERM19264::BG_COLOR);
+	myLCD.drawBitmap(100, 20, SunTextImage, 40, 16, ERM19264::BG_COLOR, ERM19264::FG_COLOR);
 	myLCD.LCDupdate();
 	busy_wait_ms(10000);
 }
@@ -287,33 +286,33 @@ void Test305(void)
 	char value[10] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
 	// bitmaps
-	const uint8_t SignalIcon[16] = // mobile signal 16x8px
+	const  std::array<uint8_t, 16> SignalIcon = // mobile signal 16x8px
 		{0x03, 0x05, 0x09, 0xff, 0x09, 0x05, 0xf3, 0x00, 0xf8, 0x00, 0xfc, 0x00, 0xfe, 0x00, 0xff, 0x00};
-	const uint8_t MsgIcon[16] = // message  , 16x8px
+	const  std::array<uint8_t, 16> MsgIcon = // message  , 16x8px
 		{0x00, 0x00, 0x00, 0xff, 0x85, 0x89, 0x91, 0x91, 0x91, 0x91, 0x89, 0x85, 0xff, 0x00, 0x00, 0x00};
-	const uint8_t BatteryIcon[16] = // 'battery', 16x8px
+	const  std::array<uint8_t, 16> BatteryIcon = // 'battery', 16x8px
 		{0x00, 0x00, 0x7e, 0x42, 0x81, 0xbd, 0xbd, 0x81, 0xbd, 0xbd, 0x81, 0xbd, 0xbd, 0x81, 0xff, 0x00};
-	const uint8_t BluetoothIcon[8] = // 'bluetooth', 8x8px
+	const  std::array<uint8_t, 8> BluetoothIcon = // 'bluetooth', 8x8px
 		{0x00, 0x42, 0x24, 0xff, 0x99, 0x5a, 0x24, 0x00};
-	const uint8_t GPRSIcon[8] = // 'gprs88', 8x8px
+	const  std::array<uint8_t, 8> GPRSIcon = // 'gprs88', 8x8px
 		{0xc3, 0x81, 0x3c, 0x42, 0x52, 0x34, 0x81, 0xc3};
-	const uint8_t AlarmIcon[8] = // 'alarm', 8x8px
+	const  std::array<uint8_t, 8> AlarmIcon = // 'alarm', 8x8px
 		{0x83, 0xbd, 0x42, 0x4a, 0x52, 0x52, 0xbd, 0x83};
 
 	myLCD.setDrawBitmapAddr(true); // for Bitmap Data Vertical  addressed
-	myLCD.drawBitmap(4, 0, SignalIcon, 16, 8, FG_COLOR, BG_COLOR, sizeof(SignalIcon));
-	myLCD.drawBitmap(44, 0, BluetoothIcon, 8, 8, FG_COLOR, BG_COLOR, sizeof(BluetoothIcon));
-	myLCD.drawBitmap(60, 0, MsgIcon, 16, 8, FG_COLOR, BG_COLOR, sizeof(MsgIcon));
-	myLCD.drawBitmap(84, 0, GPRSIcon, 8, 8, FG_COLOR, BG_COLOR, sizeof(GPRSIcon));
-	myLCD.drawBitmap(98, 0, AlarmIcon, 8, 8, FG_COLOR, BG_COLOR, sizeof(AlarmIcon));
-	myLCD.drawBitmap(160, 0, BatteryIcon, 16, 8, FG_COLOR, BG_COLOR, sizeof(BatteryIcon));
-	myLCD.drawFastHLine(0, 20, 192, FG_COLOR);
-	myLCD.drawFastHLine(0, 48, 192, FG_COLOR);
+	myLCD.drawBitmap(4, 0, SignalIcon, 16, 8, ERM19264::FG_COLOR, ERM19264::BG_COLOR);
+	myLCD.drawBitmap(44, 0, BluetoothIcon, 8, 8, ERM19264::FG_COLOR, ERM19264::BG_COLOR);
+	myLCD.drawBitmap(60, 0, MsgIcon, 16, 8, ERM19264::FG_COLOR, ERM19264::BG_COLOR);
+	myLCD.drawBitmap(84, 0, GPRSIcon, 8, 8, ERM19264::FG_COLOR, ERM19264::BG_COLOR);
+	myLCD.drawBitmap(98, 0, AlarmIcon, 8, 8, ERM19264::FG_COLOR, ERM19264::BG_COLOR);
+	myLCD.drawBitmap(160, 0, BatteryIcon, 16, 8, ERM19264::FG_COLOR, ERM19264::BG_COLOR);
+	myLCD.drawFastHLine(0, 20, 192, ERM19264::FG_COLOR);
+	myLCD.drawFastHLine(0, 48, 192, ERM19264::FG_COLOR);
 	while (count < 30)
 	{
 		unsigned long currentMillis = to_ms_since_boot(get_absolute_time());
 
-		if (currentMillis - previousMillis >= interval) // rols over every interval (1 sec)
+		if (currentMillis - previousMillis >= interval) // rolls over every interval (1 sec)
 		{
 			count++;
 			previousMillis = currentMillis;

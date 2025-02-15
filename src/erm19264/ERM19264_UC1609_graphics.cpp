@@ -8,53 +8,6 @@
 #include "../../include/erm19264/ERM19264_UC1609_graphics.hpp"
 #include "../../include/erm19264/ERM19264_UC1609.hpp"
 
-// === Font class implementation ===
-
-/*!
-	@brief init the LCD  font class object constructor
- */
-ERM19264_LCDFonts::ERM19264_LCDFonts(){};
-
-/*!
-	@brief ERM19264_SetFont
-	@param  SelectedFontName Select this font, pass the font pointer name
-	@return	Will return
-		-# 0. Success
-		-# 2. Not a valid pointer object.
- */
-uint8_t ERM19264_LCDFonts::setFont(const uint8_t *SelectedFontName)
-{
-	if (SelectedFontName == nullptr)
-	{
-		printf("ERM19264_LCDFonts::setFont ERROR 2: Invalid pointer object\r\n");
-		return 2;
-	}
-	_FontSelect = SelectedFontName;
-	_Font_X_Size = *(SelectedFontName + 0);
-	_Font_Y_Size = *(SelectedFontName + 1);
-	_FontOffset = *(SelectedFontName + 2);
-	_FontNumChars = *(SelectedFontName + 3);
-	_FontInverted = false;
-	return 0;
-}
-
-/*!
-	@brief setInvertFont
-	@param invertStatus set the invert status flag of font ,false = off.
-*/
-void ERM19264_LCDFonts::setInvertFont(bool invertStatus)
-{
-	_FontInverted = invertStatus;
-}
-
-/*!
-	@brief getInvertFont
-	@return invert status flag of font ,false = off.
-*/
-bool ERM19264_LCDFonts::getInvertFont()
-{
-	return _FontInverted;
-}
 
 // === Graphics class implementation ===
 
@@ -505,7 +458,6 @@ void ERM19264_graphics::fillTriangle(int16_t x0, int16_t y0,
 	@param h height of the bitmap
 	@param color foreground colour
 	@param bg background colour.
-	@param sizeOfBitmap size of the bitmap
 	@return Will return 0x00 for success, non-zero for failure
 		Failure could be  out of bounds , wrong size , invalid pointer object.
 	@note Variable drawBitmapAddr controls data addressing
@@ -517,37 +469,41 @@ void ERM19264_graphics::fillTriangle(int16_t x0, int16_t y0,
 		-# Bitmap excepted size = (88/8) * 48 = 528 bytes.
 */
 uint8_t ERM19264_graphics::drawBitmap(int16_t x, int16_t y,
-									   const uint8_t *bitmap, int16_t w, int16_t h,
-									   uint8_t color, uint8_t bg, uint16_t sizeOfBitmap)
+									std::span<const uint8_t> bitmap, int16_t w, int16_t h,
+									uint8_t color, uint8_t bg)
 {
-
 	// User error checks
 	// 1. Completely out of bounds?
 	if (x > _width || y > _height)
 	{
 		printf("Error drawBitmap 2 : Bitmap co-ord out of bounds, check x and y\n");
-		return 2;
+		return DisplayRet::BitmapScreenBounds;
 	}
 	// 2. bitmap weight and height
 	if (w > _width || h > _height)
 	{
 		printf("Error drawBitmap 3 : Bitmap is larger than screen, check w and h\n");
-		return 3;
+		return DisplayRet::BitmapLargerThanScreen;
 	}
 	// 3. bitmap is null
-	if (bitmap == nullptr)
+	if (bitmap.empty())
 	{
-		printf("Error drawBitmap 4 : Bitmap is is not valid pointer\n");
-		return 4;
+		printf("Error drawBitmap 4 : Bitmap is is not valid object\n");
+		return DisplayRet::BitmapDataEmpty;
 	}
 
 	if (_drawBitmapAddr == true)
 	{
-		if (sizeOfBitmap != (w * (h / 8))) // 4A.check vertical bitmap size
+		if (bitmap.size() != static_cast<size_t>(w * (h / 8))) // 4A-1 check  bitmap size
 		{
-			printf("Error drawBitmap 4A : vertical Bitmap size is incorrect:   %u  %i  %i \n", sizeOfBitmap, w, h);
-			printf("Check size =  (w*(h/8) or Is bitmap height  divisible evenly by eight or is all bitmap data there or too much \n");
-			return false;
+			printf("Error drawBitmap 4A-1 : Vertical Bitmap size is incorrect: \n");
+			return DisplayRet::BitmapSize;
+		}
+		// 4A-2 check vertical bitmap size
+		if(h % 8 != 0 )
+		{
+			printf("Error drawBitmap 4A-2: Check is bitmap height divisible evenly by eight\n");
+			return DisplayRet::BitmapVerticalSize;
 		}
 		// Vertical byte bitmaps mode
 		uint8_t vline;
@@ -582,12 +538,17 @@ uint8_t ERM19264_graphics::drawBitmap(int16_t x, int16_t y,
 	}
 	else if (_drawBitmapAddr == false)
 	{
-		// 4B.check Horizontal bitmap size
-		if (sizeOfBitmap != ((w / 8) * h))
+		// 4B-1.check bitmap size
+		if (bitmap.size() != static_cast<size_t>((w / 8) * h))
 		{
-			printf("Error drawBitmap 4B : Horizontal Bitmap size is incorrect:  Check Size =  (w/8 * h): %u  %i  %i \n", sizeOfBitmap, w, h);
-			printf("Check size = ((w/8)*h) or Is bitmap width divisible evenly by eight or is all bitmap data there or too much \n");
-			return false;
+			printf("Error drawBitmap 4B-1 : Horizontal Bitmap size is incorrect:  Check Size =  (w/8 * h)\n");
+			return DisplayRet::BitmapSize;
+		}
+		// 4B-2. check Horizontal bitmap size
+		if(w % 8 != 0 )
+		{
+			printf("Error drawBitmap 4B-2 : Check is bitmap width divisible evenly by eight\n");
+			return DisplayRet::BitmapHorizontalSize;
 		}
 		// Horizontal byte bitmaps mode
 		int16_t byteWidth = (w + 7) / 8;
@@ -605,7 +566,7 @@ uint8_t ERM19264_graphics::drawBitmap(int16_t x, int16_t y,
 		}
 
 	} // end of elseif
-	return 0;
+	return DisplayRet::Success;
 } // end of function
 
 /*!
@@ -632,7 +593,7 @@ void ERM19264_graphics::setTextWrap(bool w)
    @brief Gets the _rotation of the display
    @return rotation enum value 0-3
 */
-LCD_rotate_e ERM19264_graphics::getRotation(void){return LCD_rotate;}
+ERM19264_graphics::LCD_rotate_e ERM19264_graphics::getRotation(void){return LCD_rotate;}
 
 /*!
    @brief Sets the rotation of the display
@@ -642,13 +603,13 @@ void ERM19264_graphics::setRotation(LCD_rotate_e CurrentRotation)
 {
 	switch (CurrentRotation)
 	{
-	case 0:
-	case 2:
+	case LCD_Degrees_0:
+	case LCD_Degrees_180:
 		_width = WIDTH;
 		_height = HEIGHT;
 		break;
-	case 1:
-	case 3:
+	case LCD_Degrees_90:
+	case LCD_Degrees_270:
 		_width = HEIGHT;
 		_height = WIDTH;
 		break;
@@ -691,11 +652,11 @@ void ERM19264_graphics::setDrawBitmapAddr(bool mode)
 	@param  y character starting position on x-axis. Valid values: 0..63
 	@param  value Character to be written.
 	@return Will return
-		-# 0 success
-		-# 2 co-ords out of bounds check x and y
-		-# 3 Character out of ASCII Font bounds, check Font range
+		-# Success
+		-# CharScreenBounds co-ords out of bounds check x and y
+		-# CharFontASCIIRange Character out of ASCII Font bounds, check Font range
  */
-uint8_t ERM19264_graphics::writeChar(int16_t x, int16_t y, char value)
+DisplayRet::Ret_Codes_e ERM19264_graphics::writeChar(int16_t x, int16_t y, char value)
 {
 	uint16_t fontIndex = 0;
 	uint16_t rowCount = 0;
@@ -712,13 +673,13 @@ uint8_t ERM19264_graphics::writeChar(int16_t x, int16_t y, char value)
 		((y + _Font_Y_Size) < 0))		// Clip top
 	{
 		printf("ERM19264_graphics::writeChar Error 2: Co-ordinates out of bounds \r\n");
-		return 2;
+		return DisplayRet::CharScreenBounds;
 	}
 	// 2. Check for character out of font range bounds
 	if (value < _FontOffset || value >= (_FontOffset + _FontNumChars + 1))
 	{
 		printf("ERM19264_graphics::writeChar Error 3: Character out of Font bounds  %c : %u<->%u \r\n", value, _FontOffset, _FontOffset + _FontNumChars);
-		return 3;
+		return DisplayRet::CharFontASCIIRange;
 	}
 	if (_Font_Y_Size % 8 == 0) // Is the font height divisible by 8
 	{
@@ -727,7 +688,7 @@ uint8_t ERM19264_graphics::writeChar(int16_t x, int16_t y, char value)
 		{
 			for (count = 0; count < _Font_X_Size; count++)
 			{
-				temp = *(_FontSelect + fontIndex + count + (rowCount * _Font_X_Size));
+				temp = _FontSelect[fontIndex + count + (rowCount * _Font_X_Size)];
 				for (colIndex = 0; colIndex < 8; colIndex++)
 				{
 					if (temp & (1 << colIndex))
@@ -745,7 +706,7 @@ uint8_t ERM19264_graphics::writeChar(int16_t x, int16_t y, char value)
 	else
 	{
 		fontIndex = ((value - _FontOffset) * ((_Font_X_Size * _Font_Y_Size) / 8)) + 4;
-		colByte = *(_FontSelect + fontIndex);
+		colByte = _FontSelect[fontIndex];
 		colbit = 7;
 		for (cx = 0; cx < _Font_X_Size; cx++)
 		{
@@ -764,12 +725,12 @@ uint8_t ERM19264_graphics::writeChar(int16_t x, int16_t y, char value)
 				{
 					colbit = 7;
 					fontIndex++;
-					colByte = *(_FontSelect + fontIndex);
+					colByte = _FontSelect[fontIndex];
 				}
 			}
 		}
 	}
-	return 0;
+	return DisplayRet::Success;
 }
 
 /*!
@@ -779,10 +740,10 @@ uint8_t ERM19264_graphics::writeChar(int16_t x, int16_t y, char value)
 	@param  pText Pointer to the array of the text to be written.
 	@return Will return
 		-# 0 Success
-		-# 2 String pText Array invalid pointer object
-		-# 3 Failure in writeChar method upstream
+		-# CharArrayNullptr  String pText Array invalid pointer object
+		-# Failure in writeChar method upstream, that error code will be returned
  */
-uint8_t ERM19264_graphics::writeCharString(int16_t x, int16_t y, char *pText)
+DisplayRet::Ret_Codes_e ERM19264_graphics::writeCharString(int16_t x, int16_t y, char *pText)
 {
 	uint8_t count = 0;
 	uint8_t MaxLength = 0;
@@ -790,8 +751,9 @@ uint8_t ERM19264_graphics::writeCharString(int16_t x, int16_t y, char *pText)
 	if (pText == nullptr)
 	{
 		print("ERM19264_graphics::writeCharString Error 2 :String array is not valid pointer\n");
-		return 2;
+		return DisplayRet::CharArrayNullptr;
 	}
+	DisplayRet::Ret_Codes_e DrawCharReturnCode;
 	while (*pText != '\0')
 	{
 		// check if text has reached end of screen
@@ -801,14 +763,14 @@ uint8_t ERM19264_graphics::writeCharString(int16_t x, int16_t y, char *pText)
 			x = 0;
 			count = 0;
 		}
-		if (writeChar(x + (count * (_Font_X_Size)), y, *pText++) != 0)
-			return 3;
+		DrawCharReturnCode = writeChar(x + (count * (_Font_X_Size)), y, *pText++);
+		if(DrawCharReturnCode  != DisplayRet::Success) return DrawCharReturnCode;
 		count++;
 		MaxLength++;
-		if (MaxLength >= 150)
+		if (MaxLength >= 240)
 			break; // 2nd way out of loop, safety check
 	}
-	return 0;
+	return DisplayRet::Success;
 }
 
 /*!
@@ -816,10 +778,11 @@ uint8_t ERM19264_graphics::writeCharString(int16_t x, int16_t y, char *pText)
 	@param character the character to print
 	@return Will return
 		-# 1. success
-		-# -1. An error in the writeChar method.
+		-# Ret_Codes_e enum error code An error in the writeChar method.
 */
 size_t ERM19264_graphics::write(uint8_t character)
 {
+
 	switch (character)
 	{
 	case '\n':
@@ -829,8 +792,14 @@ size_t ERM19264_graphics::write(uint8_t character)
 	case '\r':
 		break;
 	default:
-		if (writeChar(_cursor_x, _cursor_y, character) != 0)
-			return -1;
+		DisplayRet::Ret_Codes_e DrawCharReturnCode;
+		DrawCharReturnCode = writeChar(_cursor_x, _cursor_y, character);
+		if (DrawCharReturnCode != DisplayRet::Success) 
+		{
+			// Set the write error based on the result of the drawing operation
+			setWriteError(DrawCharReturnCode); // Set error flag to non-zero value}
+			break;
+		}
 		_cursor_x += (_Font_X_Size);
 		if (_textwrap && (_cursor_x > (_width - (_Font_X_Size))))
 		{

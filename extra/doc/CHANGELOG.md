@@ -6,4 +6,6 @@
 	* New Font System.
 	* Added enhanced error handling to most bitmap and text functions.
 	* LCD size is now variable
-	* Buffer rotate now available as well as Rotate with LCD command.
+	* Buffer rotate now available as well as flip by LCD command.
+* version 1.9.0 Feb 2025
+	* Code base optimization. 
