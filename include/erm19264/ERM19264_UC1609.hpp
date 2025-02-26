@@ -94,7 +94,7 @@ private:
 	int16_t _LCD_WIDTH = 192;				  /**< Width of LCD Screen in pixels */
 	int16_t _LCD_HEIGHT = 64;				  /**< Height of LCD Screen in pixels */
 	int8_t _LCD_PAGE_NUM = (_LCD_HEIGHT / 8); /**< Number of byte size pages LCD screen is divided into */
-	std::span<uint8_t> _LCDbuffer;           /**< Buffer to hold screen data */			  /**< Pointer to screen buffer data*/
+	std::span<uint8_t> _LCDbuffer;           /**< Buffer to hold screen data */
 	uint8_t _VbiasPOT;	  /**< Contrast default 0x49 datasheet 00-FE, lower works better on Blue*/
 	uint8_t _AddressCtrl; /**< Set AC [2:0] Program registers  for RAM address control. 0x00 to 0x07*/
 
