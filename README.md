@@ -121,7 +121,7 @@ First 4 bytes are control bytes followed by vertically addressed font data.
 // 0 and 1 
 static const std::array<uint8_t, 12>FontBinaryExample[] =
 {
-0x04, 0x08, 0x30, 0x02,   // x-size, y-size, offset, total characters
+0x04, 0x08, 0x30, 0x01,   // x-size, y-size, offset, total characters-1
 (data),(data),(data),(data) // font data '0'
 (data),(data),(data),(data) // font data '1'
 }
