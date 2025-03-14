@@ -127,12 +127,14 @@ static const std::array<uint8_t, 12>FontBinaryExample[] =
 }
 ```
 
-Some of the fonts packaged with library came from [URL](http://rinkydinkelectronics.com/).
-If user has picture of a font like so.
+*Sources*
 
-![ font ](https://github.com/gavinlyonsrepo/SSD1306_OLED_PICO/blob/main/extra/image/hallfetica_normal.png)
-
-There is a monochrome font maker there at [URL](http://rinkydinkelectronics.com/t_make_font_file_mono.php)
+1. Some of the fonts packaged with library came from [URL](http://rinkydinkelectronics.com/)
+2. These fonts have horizontally addressed data.
+3. They must be converted to vertically addressed font data if user wants them for ERM19264_UC1609_PICO.
+4. There is a monochrome font maker there at [URL](http://rinkydinkelectronics.com/t_make_font_file_mono.php),
+5. Just upload the picture of font from URL links on step 1 to it. 
+6. The font you pick MUST have : Height(or y-size) must be divisible evenly by 8. (Width X Height)
 
 
 ### Bitmaps
